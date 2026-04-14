@@ -1,0 +1,122 @@
+.artwork-card {
+  background: #141419;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  cursor: default;
+}
+
+.artwork-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  border-color: rgba(255,255,255,0.14);
+}
+
+.artwork-thumbnail {
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+.artwork-card--mini .artwork-thumbnail {
+  height: 120px;
+}
+
+.artwork-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%);
+  display: flex;
+  align-items: flex-end;
+  padding: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.artwork-card:hover .artwork-overlay {
+  opacity: 1;
+}
+
+.artwork-category {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.4);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.artwork-footer {
+  padding: 0.75rem 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.artwork-meta {
+  min-width: 0;
+}
+
+.artwork-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 0.125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artwork-artist {
+  font-size: 0.75rem;
+  color: #a78bfa;
+  text-decoration: none;
+}
+
+.artwork-artist:hover {
+  text-decoration: underline;
+}
+
+.like-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 0.3rem 0.625rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.like-btn:hover {
+  border-color: rgba(244,63,94,0.4);
+  background: rgba(244,63,94,0.08);
+}
+
+.like-btn.liked {
+  border-color: rgba(244,63,94,0.5);
+  background: rgba(244,63,94,0.12);
+}
+
+.like-icon {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.like-btn.liked .like-icon {
+  color: #f43f5e;
+}
+
+.like-count {
+  font-size: 0.73rem;
+  color: rgba(255,255,255,0.5);
+  font-weight: 500;
+}
