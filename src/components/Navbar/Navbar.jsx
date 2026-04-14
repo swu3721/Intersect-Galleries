@@ -9,21 +9,20 @@ export default function Navbar({ currentUser, onLogout }) {
     <nav className="navbar">
       <div className="navbar-inner">
         <Link to="/" className="navbar-brand">
-          <span className="brand-icon">✦</span>
-          <span className="brand-text">Intersect</span>
+          <span className="brand-text">intersect_galleries</span>
         </Link>
 
         <div className="navbar-links">
           <Link to="/explore" className="nav-link">Explore</Link>
+          <Link to={currentUser ? '/explore' : '/signup'} className="nav-btn-outline">Create Portfolio</Link>
           {currentUser ? (
             <>
-              <Link to={`/profile/${currentUser.username}`} className="nav-link">My Portfolio</Link>
-              <button className="nav-btn-outline" onClick={onLogout}>Log out</button>
+              <Link to={`/profile/${currentUser.username}`} className="nav-link">My Profile</Link>
+              <button className="nav-link nav-link-btn" onClick={onLogout}>Log out</button>
             </>
           ) : (
             <>
               <Link to="/login" className="nav-link">Log in</Link>
-              <Link to="/signup" className="nav-btn">Join free</Link>
             </>
           )}
         </div>
@@ -36,15 +35,15 @@ export default function Navbar({ currentUser, onLogout }) {
       {menuOpen && (
         <div className="mobile-menu">
           <Link to="/explore" className="mobile-link" onClick={() => setMenuOpen(false)}>Explore</Link>
+          <Link to={currentUser ? '/explore' : '/signup'} className="mobile-link" onClick={() => setMenuOpen(false)}>Create Portfolio</Link>
           {currentUser ? (
             <>
-              <Link to={`/profile/${currentUser.username}`} className="mobile-link" onClick={() => setMenuOpen(false)}>My Portfolio</Link>
+              <Link to={`/profile/${currentUser.username}`} className="mobile-link" onClick={() => setMenuOpen(false)}>My Profile</Link>
               <button className="mobile-link mobile-logout" onClick={() => { onLogout(); setMenuOpen(false); }}>Log out</button>
             </>
           ) : (
             <>
               <Link to="/login" className="mobile-link" onClick={() => setMenuOpen(false)}>Log in</Link>
-              <Link to="/signup" className="mobile-link" onClick={() => setMenuOpen(false)}>Join free</Link>
             </>
           )}
         </div>

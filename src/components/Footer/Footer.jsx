@@ -5,35 +5,25 @@ export default function Footer() {
   return (
     <footer className="footer">
       <div className="footer-inner">
-        <div className="footer-brand">
-          <Link to="/" className="footer-logo">
-            <span className="footer-logo-icon">✦</span>
-            <span>Intersect</span>
-          </Link>
-          <p className="footer-tagline">Where creative portfolios intersect.</p>
+        <div className="footer-grid">
+          <div className="footer-brand">
+            <h3>intersect_galleries</h3>
+            <p className="footer-tagline">
+              Platform for contemporary artists to showcase their vision and connect with the world
+            </p>
+          </div>
+
+          <div className="footer-links">
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+            <Link to="/signup">Submit</Link>
+            <a href="#">Instagram</a>
+          </div>
         </div>
 
-        <div className="footer-links">
-          <div className="footer-col">
-            <h4>Platform</h4>
-            <Link to="/explore">Explore</Link>
-            <Link to="/signup">Join free</Link>
-          </div>
-          <div className="footer-col">
-            <h4>Company</h4>
-            <a href="#">About</a>
-            <a href="#">Blog</a>
-            <a href="#">Careers</a>
-          </div>
-          <div className="footer-col">
-            <h4>Legal</h4>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-          </div>
+        <div className="footer-bottom">
+          <p>© 2026 intersect_galleries. All rights reserved.</p>
         </div>
-      </div>
-      <div className="footer-bottom">
-        <p>© 2024 Intersect Galleries. All rights reserved.</p>
       </div>
     </footer>
   );

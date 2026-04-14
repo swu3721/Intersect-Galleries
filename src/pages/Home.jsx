@@ -1,123 +1,143 @@
 import { Link } from 'react-router-dom';
-import { users, featuredArtworks, categories } from '../data/mockData';
-import ArtworkCard from '../components/ArtworkCard/ArtworkCard';
-import UserCard from '../components/UserCard/UserCard';
 import './Home.css';
 
+const demoArtists = [
+  {
+    id: '1',
+    name: 'Maya Chen',
+    discipline: 'Digital Collage',
+    location: 'Brooklyn, NY',
+    coverImage: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1200&h=800&fit=crop',
+  },
+  {
+    id: '2',
+    name: 'Jordan Rivers',
+    discipline: 'Photography',
+    location: 'Manhattan, NY',
+    coverImage: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&h=800&fit=crop',
+  },
+  {
+    id: '3',
+    name: 'Aria Blackwood',
+    discipline: 'Mixed Media',
+    location: 'Chelsea, NY',
+    coverImage: 'https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=1200&h=800&fit=crop',
+  },
+  {
+    id: '4',
+    name: 'Kai Martinez',
+    discipline: 'Sculpture',
+    location: 'Bushwick, NY',
+    coverImage: 'https://images.unsplash.com/photo-1545898679-1d5a6a6b29d0?w=1200&h=800&fit=crop',
+  },
+  {
+    id: '5',
+    name: 'Zoe Park',
+    discipline: 'Painting',
+    location: 'Lower East Side, NY',
+    coverImage: 'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=1200&h=800&fit=crop',
+  },
+  {
+    id: '6',
+    name: 'River Stone',
+    discipline: 'Installation',
+    location: 'DUMBO, NY',
+    coverImage: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=1200&h=800&fit=crop',
+  },
+  {
+    id: '7',
+    name: 'Niko Ash',
+    discipline: 'Abstract Art',
+    location: 'Williamsburg, NY',
+    coverImage: 'https://images.unsplash.com/photo-1578301978162-7aae4d755744?w=1200&h=800&fit=crop',
+  },
+  {
+    id: '8',
+    name: 'Sage Monroe',
+    discipline: 'Performance Art',
+    location: 'Red Hook, NY',
+    coverImage: 'https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=1200&h=800&fit=crop',
+  },
+  {
+    id: '9',
+    name: 'Atlas Cruz',
+    discipline: 'Urban Art',
+    location: 'East Village, NY',
+    coverImage: 'https://images.unsplash.com/photo-1561998338-13ad7883b21f?w=1200&h=800&fit=crop',
+  },
+];
+
 export default function Home({ currentUser }) {
-  const topUsers = [...users].sort((a, b) => b.followers - a.followers).slice(0, 3);
+  const featuredArtists = demoArtists.slice(0, 6);
+  const allArtists = demoArtists.slice(6);
 
   return (
-    <div className="home">
-      {/* Hero */}
-      <section className="hero">
-        <div className="hero-bg">
-          {featuredArtworks.map((art, i) => (
-            <div
-              key={art.id}
-              className="hero-bg-swatch"
-              style={{ background: art.color, '--idx': i }}
-            />
-          ))}
-        </div>
-        <div className="hero-content">
-          <div className="hero-badge">Creative Portfolio Network</div>
-          <h1 className="hero-title">
-            Where portfolios<br />
-            <span className="hero-accent">intersect</span>
+    <div className="home-demo">
+      <section className="demo-hero">
+        <div className="demo-hero-overlay" />
+        <img
+          src="https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=1920&h=1080&fit=crop"
+          alt="Gallery"
+          className="demo-hero-image"
+        />
+        <div className="demo-hero-content">
+          <h1>
+            DISCOVER
+            <br />
+            ARTISTS
           </h1>
-          <p className="hero-subtitle">
-            Share your work. Discover amazing artists. Build your creative community.
-          </p>
-          <div className="hero-actions">
-            {currentUser ? (
-              <Link to="/explore" className="btn-primary">Explore Galleries</Link>
-            ) : (
-              <>
-                <Link to="/signup" className="btn-primary">Start your portfolio</Link>
-                <Link to="/explore" className="btn-ghost">Browse galleries</Link>
-              </>
-            )}
-          </div>
-          <div className="hero-stats">
-            <div className="hero-stat">
-              <span className="hero-stat-value">{users.length}+</span>
-              <span className="hero-stat-label">Artists</span>
-            </div>
-            <div className="hero-stat-divider" />
-            <div className="hero-stat">
-              <span className="hero-stat-value">
-                {users.reduce((s, u) => s + u.artworks.length, 0)}+
-              </span>
-              <span className="hero-stat-label">Artworks</span>
-            </div>
-            <div className="hero-stat-divider" />
-            <div className="hero-stat">
-              <span className="hero-stat-value">
-                {categories.length - 1}+
-              </span>
-              <span className="hero-stat-label">Categories</span>
-            </div>
-          </div>
+          <p>A curated platform for contemporary creators pushing boundaries</p>
+          {!currentUser && (
+            <Link to="/signup" className="demo-hero-cta">CREATE PORTFOLIO</Link>
+          )}
         </div>
       </section>
 
-      {/* Featured Artworks */}
-      <section className="section">
-        <div className="section-inner">
-          <div className="section-header">
-            <div>
-              <h2 className="section-title">Featured works</h2>
-              <p className="section-subtitle">Handpicked highlights from our community</p>
-            </div>
-            <Link to="/explore" className="section-link">View all →</Link>
+      <section className="featured-section">
+        <div className="demo-wrap">
+          <div className="section-intro">
+            <h2>FEATURED</h2>
+            <p>Curated selection of contemporary talent</p>
           </div>
-          <div className="artworks-grid">
-            {featuredArtworks.map(art => (
-              <ArtworkCard
-                key={art.id}
-                artwork={art}
-                artistName={art.artistName}
-                username={art.username}
-                userId={art.userId}
-              />
+          <div className="featured-grid">
+            {featuredArtists.map((artist, index) => (
+              <article key={artist.id} className={`featured-card${index % 2 === 1 ? ' staggered' : ''}`}>
+                <Link to="/explore" className="featured-image-wrap">
+                  <img src={artist.coverImage} alt={artist.name} className="featured-image" />
+                  <span className="featured-overlay-text">View Portfolio →</span>
+                </Link>
+                <div className="featured-meta">
+                  <h3>{artist.name}</h3>
+                  <p className="discipline">{artist.discipline}</p>
+                  <p className="location">{artist.location}</p>
+                </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Top Creators */}
-      <section className="section section-alt">
-        <div className="section-inner">
-          <div className="section-header">
-            <div>
-              <h2 className="section-title">Top creators</h2>
-              <p className="section-subtitle">The most-followed portfolios on Intersect</p>
-            </div>
-            <Link to="/explore" className="section-link">See all artists →</Link>
+      <section className="all-artists-section">
+        <div className="demo-wrap">
+          <div className="section-intro">
+            <h2>ALL ARTISTS</h2>
+            <p>Browse the complete collection</p>
           </div>
-          <div className="users-grid">
-            {topUsers.map(user => (
-              <UserCard key={user.id} user={user} />
+          <div className="all-grid">
+            {allArtists.map((artist) => (
+              <article key={artist.id} className="all-card">
+                <Link to="/explore" className="all-image-wrap">
+                  <img src={artist.coverImage} alt={artist.name} className="all-image" />
+                </Link>
+                <div className="all-meta">
+                  <h4>{artist.name}</h4>
+                  <p>{artist.discipline}</p>
+                </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
-
-      {/* CTA */}
-      {!currentUser && (
-        <section className="cta-section">
-          <div className="cta-inner">
-            <h2 className="cta-title">Ready to share your work?</h2>
-            <p className="cta-subtitle">
-              Join thousands of artists and showcase your portfolio to the world.
-            </p>
-            <Link to="/signup" className="btn-primary btn-large">
-              Create your portfolio — it's free
-            </Link>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
