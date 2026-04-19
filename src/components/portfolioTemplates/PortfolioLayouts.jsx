@@ -7,10 +7,24 @@ function artsySpanClass(i) {
   return '';
 }
 
-export function PortfolioWorksSection({ template, user, username, isOwner }) {
+export function PortfolioWorksSection({
+  template,
+  user,
+  username,
+  isOwner,
+  /** (artwork) => void | Promise — e.g. owner deletes from Supabase */
+  onDeleteWork,
+}) {
   const artistName = user.name;
   const artworks = user.artworks ?? [];
   const tpl = normalizePortfolioTemplate(template || user.portfolio_template);
+
+  const del = (art) =>
+    onDeleteWork
+      ? () => {
+          void onDeleteWork(art);
+        }
+      : undefined;
 
   const empty = (
     <p className="portfolio-layout__empty">
@@ -26,7 +40,12 @@ export function PortfolioWorksSection({ template, user, username, isOwner }) {
             key={art.id}
             className={`portfolio-layout__artsy-cell ${artsySpanClass(i)}`.trim()}
           >
-            <ArtworkCard artwork={art} artistName={artistName} username={username} />
+            <ArtworkCard
+              artwork={art}
+              artistName={artistName}
+              username={username}
+              onDelete={del(art)}
+            />
           </div>
         ))}
         {isOwner && artworks.length === 0 && empty}
@@ -56,12 +75,23 @@ export function PortfolioWorksSection({ template, user, username, isOwner }) {
         </h2>
         <div className="portfolio-layout__bold-accent" aria-hidden />
         <div className="portfolio-layout__bold-hero">
-          <ArtworkCard artwork={first} artistName={artistName} username={username} />
+          <ArtworkCard
+            artwork={first}
+            artistName={artistName}
+            username={username}
+            onDelete={del(first)}
+          />
         </div>
         {rest.length > 0 && (
           <div className="portfolio-layout__bold-grid">
             {rest.map((art) => (
-              <ArtworkCard key={art.id} artwork={art} artistName={artistName} username={username} />
+              <ArtworkCard
+                key={art.id}
+                artwork={art}
+                artistName={artistName}
+                username={username}
+                onDelete={del(art)}
+              />
             ))}
           </div>
         )}
@@ -91,6 +121,7 @@ export function PortfolioWorksSection({ template, user, username, isOwner }) {
             artistName={artistName}
             username={username}
             minimal
+            onDelete={del(lead)}
           />
         </div>
         {rest.length > 0 && (
@@ -102,6 +133,7 @@ export function PortfolioWorksSection({ template, user, username, isOwner }) {
                 artistName={artistName}
                 username={username}
                 minimal
+                onDelete={del(art)}
               />
             ))}
           </div>
@@ -113,7 +145,13 @@ export function PortfolioWorksSection({ template, user, username, isOwner }) {
   return (
     <div className="portfolio-layout portfolio-layout--minimalist">
       {artworks.map((art) => (
-        <ArtworkCard key={art.id} artwork={art} artistName={artistName} username={username} />
+        <ArtworkCard
+          key={art.id}
+          artwork={art}
+          artistName={artistName}
+          username={username}
+          onDelete={del(art)}
+        />
       ))}
       {isOwner && artworks.length === 0 && empty}
     </div>

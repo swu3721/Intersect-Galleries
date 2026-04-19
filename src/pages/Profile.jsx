@@ -1,8 +1,9 @@
 import { useParams, Link } from 'react-router-dom';
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { users } from '../data/mockData';
 import { useAuth } from '../context/AuthContext';
 import {
+  deletePortfolioItemForCurrentUser,
   fetchProfileByUsername,
   mapProfileRowsToViewModel,
 } from '../lib/supabaseProfiles';
@@ -24,6 +25,7 @@ export default function Profile() {
   const [user, setUser] = useState(null);
   const [following, setFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState('works');
+  const [workDeleteError, setWorkDeleteError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -82,6 +84,32 @@ export default function Profile() {
   const boldDiscipline =
     user?.tags?.[0] || user?.artworks?.[0]?.category || '';
 
+  const handleDeleteWork = useCallback(async (artwork) => {
+    if (!user || user._source !== 'supabase') return;
+    if (
+      !window.confirm(
+        `Remove “${artwork.title}” from your portfolio? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    setWorkDeleteError('');
+    try {
+      await deletePortfolioItemForCurrentUser(artwork.id, artwork.storage_path);
+      setUser((prev) => {
+        if (!prev) return prev;
+        const nextArtworks = prev.artworks.filter((a) => a.id !== artwork.id);
+        const tags = [...new Set(nextArtworks.map((i) => i.category).filter(Boolean))].slice(
+          0,
+          8,
+        );
+        return { ...prev, artworks: nextArtworks, tags };
+      });
+    } catch (e) {
+      setWorkDeleteError(e.message || 'Could not delete that work.');
+    }
+  }, [user]);
+
   if (loading) {
     return (
       <div className="profile-loading" role="status">
@@ -103,6 +131,9 @@ export default function Profile() {
   }
 
   const followerCount = user.followers + (following ? 1 : 0);
+
+  const onDeleteWork =
+    isOwner && user._source === 'supabase' ? handleDeleteWork : undefined;
 
   return (
     <div className={`profile profile--tpl-${template}`}>
@@ -299,12 +330,19 @@ export default function Profile() {
             </button>
           </div>
 
+          {workDeleteError && activeTab === 'works' && (
+            <p className="profile-work-delete-error" role="alert">
+              {workDeleteError}
+            </p>
+          )}
+
           {activeTab === 'works' && (
             <PortfolioWorksSection
               template={template}
               user={user}
               username={user.username}
               isOwner={isOwner}
+              onDeleteWork={onDeleteWork}
             />
           )}
 

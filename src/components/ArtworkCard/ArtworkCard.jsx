@@ -9,6 +9,8 @@ export default function ArtworkCard({
   mini,
   /** Maya-style portfolio: no likes, no @link, category under title */
   minimal = false,
+  /** Owner: optional callback to remove this work from portfolio */
+  onDelete,
 }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(artwork.likes || 0);
@@ -36,6 +38,20 @@ export default function ArtworkCard({
         style={{ background: artwork.color }}
         aria-label={artwork.title}
       >
+        {onDelete && (
+          <button
+            type="button"
+            className="artwork-delete-btn"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete();
+            }}
+            aria-label={`Remove ${artwork.title} from portfolio`}
+          >
+            Remove
+          </button>
+        )}
         {hasMedia && isVideo && (
           <video
             className="artwork-thumb-media"

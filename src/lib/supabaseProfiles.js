@@ -72,6 +72,29 @@ export function mapProfileRowsToViewModel(profile, items) {
   };
 }
 
+/** Delete a portfolio item you own; removes DB row and storage object. */
+export async function deletePortfolioItemForCurrentUser(itemId, storagePath) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.user?.id) throw new Error('You must be signed in.');
+
+  const { error: delErr } = await supabase
+    .from('portfolio_items')
+    .delete()
+    .eq('id', itemId)
+    .eq('user_id', session.user.id);
+
+  if (delErr) throw delErr;
+
+  if (storagePath) {
+    const { error: stErr } = await supabase.storage
+      .from('portfolio')
+      .remove([storagePath]);
+    if (stErr) console.warn('Storage delete:', stErr);
+  }
+}
+
 export async function fetchProfilesForExplore(limit = 48) {
   const { data, error } = await supabase
     .from('profiles')

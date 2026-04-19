@@ -437,6 +437,15 @@ a.btn-edit {
   padding: 0 clamp(1.5rem, 4vw, 2rem);
 }
 
+.profile-work-delete-error {
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  color: #b42318;
+  background: rgba(180, 35, 24, 0.08);
+  border-radius: 8px;
+}
+
 .profile-tabs {
   display: flex;
   gap: 0;
