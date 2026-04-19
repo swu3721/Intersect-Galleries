@@ -6,13 +6,16 @@ export default function ArtworkCard({ artwork, artistName, username, mini }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(artwork.likes || 0);
 
+  const hasMedia = Boolean(artwork.mediaUrl);
+  const isVideo = artwork.media_type === 'video';
+
   const handleLike = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (liked) {
-      setLikeCount(c => c - 1);
+      setLikeCount((c) => c - 1);
     } else {
-      setLikeCount(c => c + 1);
+      setLikeCount((c) => c + 1);
     }
     setLiked(!liked);
   };
@@ -24,6 +27,24 @@ export default function ArtworkCard({ artwork, artistName, username, mini }) {
         style={{ background: artwork.color }}
         aria-label={artwork.title}
       >
+        {hasMedia && isVideo && (
+          <video
+            className="artwork-thumb-media"
+            src={artwork.mediaUrl}
+            controls
+            muted
+            playsInline
+            preload="metadata"
+          />
+        )}
+        {hasMedia && !isVideo && (
+          <img
+            className="artwork-thumb-media"
+            src={artwork.mediaUrl}
+            alt={artwork.title}
+            loading="lazy"
+          />
+        )}
         <div className="artwork-overlay">
           <span className="artwork-category">{artwork.category}</span>
         </div>
@@ -32,12 +53,13 @@ export default function ArtworkCard({ artwork, artistName, username, mini }) {
         <div className="artwork-meta">
           <p className="artwork-title">{artwork.title}</p>
           {artistName && (
-            <Link to={`/profile/${username}`} className="artwork-artist" onClick={e => e.stopPropagation()}>
+            <Link to={`/profile/${username}`} className="artwork-artist" onClick={(e) => e.stopPropagation()}>
               @{username}
             </Link>
           )}
         </div>
         <button
+          type="button"
           className={`like-btn${liked ? ' liked' : ''}`}
           onClick={handleLike}
           aria-label={liked ? 'Unlike' : 'Like'}

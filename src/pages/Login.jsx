@@ -1,30 +1,55 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { users } from '../data/mockData';
+import { supabase } from '../lib/supabase';
 import './Auth.css';
 
-export default function Login({ onLogin }) {
+export default function Login() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const user = users.find(u => u.username === form.username.toLowerCase().trim());
-    if (!user) {
-      setError('No account found with that username.');
+    setSubmitting(true);
+    const { error: signError } = await supabase.auth.signInWithPassword({
+      email: form.email.trim(),
+      password: form.password,
+    });
+    setSubmitting(false);
+
+    if (signError) {
+      setError(signError.message === 'Invalid login credentials'
+        ? 'Invalid email or password.'
+        : signError.message);
       return;
     }
-    // Demo: any password works
-    onLogin(user);
-    navigate(`/profile/${user.username}`);
-  };
 
-  // Quick demo login
-  const demoLogin = (user) => {
-    onLogin(user);
-    navigate(`/profile/${user.username}`);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user?.id) {
+      setError('Could not load your account. Try again.');
+      return;
+    }
+
+    const { data: prof, error: profError } = await supabase
+      .from('profiles')
+      .select('username, onboarding_complete')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profError || !prof) {
+      setError('Your profile could not be loaded. If this is a new project, apply the database migration in Supabase.');
+      return;
+    }
+
+    if (!prof.onboarding_complete) {
+      navigate('/onboarding', { replace: true });
+    } else {
+      navigate(`/profile/${prof.username}`, { replace: true });
+    }
   };
 
   return (
@@ -35,19 +60,19 @@ export default function Login({ onLogin }) {
           <span>Intersect</span>
         </div>
         <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-subtitle">Log in to your portfolio</p>
+        <p className="auth-subtitle">Log in with the email you used to sign up</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="login-email">Email</label>
             <input
-              id="username"
-              type="text"
-              placeholder="your_username"
-              value={form.username}
-              onChange={e => setForm({ ...form, username: e.target.value })}
+              id="login-email"
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={e => setForm({ ...form, email: e.target.value })}
               required
-              autoComplete="username"
+              autoComplete="email"
             />
           </div>
           <div className="form-group">
@@ -61,30 +86,15 @@ export default function Login({ onLogin }) {
               required
               autoComplete="current-password"
             />
-            <span className="field-hint">Any password works in this demo.</span>
           </div>
           {error && <p className="form-error">{error}</p>}
-          <button type="submit" className="auth-submit">Log in</button>
+          <button type="submit" className="auth-submit" disabled={submitting}>
+            {submitting ? 'Signing in…' : 'Log in'}
+          </button>
         </form>
 
-        <div className="auth-divider"><span>or try a demo account</span></div>
-
-        <div className="demo-accounts">
-          {users.slice(0, 3).map(user => (
-            <button key={user.id} className="demo-account" onClick={() => demoLogin(user)}>
-              <span className="demo-avatar" style={{ background: user.avatarColor }}>
-                {user.initials}
-              </span>
-              <span className="demo-info">
-                <span className="demo-name">{user.name}</span>
-                <span className="demo-username">@{user.username}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-
         <p className="auth-switch">
-          Don't have an account? <Link to="/signup">Create one free</Link>
+          Don&apos;t have an account? <Link to="/signup">Create one free</Link>
         </p>
       </div>
     </div>

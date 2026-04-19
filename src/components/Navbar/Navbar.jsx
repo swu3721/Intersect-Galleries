@@ -1,33 +1,53 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { motion } from 'motion/react';
+import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
 
-export default function Navbar({ currentUser, onLogout }) {
+export default function Navbar({ onLogout }) {
+  const { currentUser } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="navbar">
+    <motion.nav
+      className="navbar"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+    >
       <div className="navbar-inner">
         <Link to="/" className="navbar-brand">
-          <span className="brand-text">intersect_galleries</span>
+          <motion.span
+            className="brand-text"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            intersect_galleries
+          </motion.span>
         </Link>
 
-        <div className="navbar-links">
+        <motion.div
+          className="navbar-links"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+        >
           <Link to="/explore" className="nav-link">Explore</Link>
           <Link to={currentUser ? '/explore' : '/signup'} className="nav-btn-outline">Create Portfolio</Link>
           {currentUser ? (
             <>
               <Link to={`/profile/${currentUser.username}`} className="nav-link">My Profile</Link>
-              <button className="nav-link nav-link-btn" onClick={onLogout}>Log out</button>
+              <button type="button" className="nav-link nav-link-btn" onClick={onLogout}>Log out</button>
             </>
           ) : (
             <>
               <Link to="/login" className="nav-link">Log in</Link>
             </>
           )}
-        </div>
+        </motion.div>
 
-        <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
+        <button type="button" className="hamburger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -39,7 +59,7 @@ export default function Navbar({ currentUser, onLogout }) {
           {currentUser ? (
             <>
               <Link to={`/profile/${currentUser.username}`} className="mobile-link" onClick={() => setMenuOpen(false)}>My Profile</Link>
-              <button className="mobile-link mobile-logout" onClick={() => { onLogout(); setMenuOpen(false); }}>Log out</button>
+              <button type="button" className="mobile-link mobile-logout" onClick={() => { onLogout(); setMenuOpen(false); }}>Log out</button>
             </>
           ) : (
             <>
@@ -48,6 +68,6 @@ export default function Navbar({ currentUser, onLogout }) {
           )}
         </div>
       )}
-    </nav>
+    </motion.nav>
   );
 }

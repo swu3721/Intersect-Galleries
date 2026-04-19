@@ -1,0 +1,65 @@
+/**
+ * Visual tokens aligned with intersect_galleriesofficialdemo
+ * (Comfortaa + light theme variables from default_shadcn_theme / theme.css)
+ */
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --font-size: 16px;
+  --ig-background: #ffffff;
+  --ig-foreground: #030213;
+  --ig-muted: #ececf0;
+  --ig-muted-foreground: #717182;
+  --ig-border: rgba(0, 0, 0, 0.1);
+  --ig-input-background: #f3f3f5;
+  --ig-primary: #030213;
+  --ig-primary-foreground: #ffffff;
+  --ig-radius: 0.625rem;
+}
+
+html {
+  font-size: var(--font-size);
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Comfortaa', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--ig-background);
+  color: var(--ig-foreground);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Comfortaa', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Dark strips (home hero / all-artists): light scrollbar thumb */
+.home-demo ::-webkit-scrollbar-thumb,
+.bg-ig-dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.home-demo ::-webkit-scrollbar-thumb:hover,
+.bg-ig-dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

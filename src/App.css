@@ -7,3 +7,12 @@
 .app-main {
   flex: 1;
 }
+
+.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 0.95rem;
+}

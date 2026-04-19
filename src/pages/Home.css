@@ -51,14 +51,20 @@
 .demo-hero-content p {
   max-width: 46rem;
   margin: 0 auto;
-  font-size: clamp(1rem, 2.1vw, 1.55rem);
+  font-size: clamp(1.125rem, 2.2vw, 1.5rem);
   color: rgba(255, 255, 255, 0.6);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+}
+
+.demo-hero-cta-wrap {
+  display: block;
+  margin-top: 1.75rem;
 }
 
 .demo-hero-cta {
   display: inline-block;
-  margin-top: 1.75rem;
+  margin-top: 0;
   border: 1px solid rgba(255, 255, 255, 0.34);
   color: #fff;
   text-decoration: none;
@@ -108,6 +114,12 @@
   margin-top: 0;
 }
 
+.featured-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
 .featured-image-wrap {
   position: relative;
   display: block;
@@ -142,7 +154,7 @@
 }
 
 .featured-image-wrap:hover .featured-image {
-  transform: scale(1.08);
+  transform: scale(1.1);
   opacity: 0.8;
 }
 
@@ -154,15 +166,21 @@
   opacity: 1;
 }
 
+.featured-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
 .featured-meta h3 {
   margin: 0;
-  font-size: clamp(2rem, 4vw, 3.35rem);
+  font-size: clamp(2rem, 4vw, 3.15rem);
   letter-spacing: -0.02em;
-  line-height: 0.98;
+  line-height: 1.05;
 }
 
 .featured-meta p {
-  margin: 0.45rem 0 0;
+  margin: 0;
 }
 
 .featured-meta .discipline {
@@ -185,6 +203,10 @@
   min-height: 100vh;
 }
 
+.all-artists-section .section-intro h2 {
+  color: #fff;
+}
+
 .all-artists-section .section-intro p {
   color: rgba(255, 255, 255, 0.5);
 }
@@ -193,6 +215,12 @@
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: 2.75rem;
+}
+
+.all-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
 
 .all-image-wrap {
@@ -212,8 +240,7 @@
 }
 
 .all-image-wrap:hover .all-image {
-  opacity: 0.72;
-  transform: scale(1.03);
+  opacity: 0.7;
 }
 
 .all-meta h4 {

@@ -1,0 +1,51 @@
+.portfolio-layout--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.portfolio-layout--masonry {
+  column-count: 3;
+  column-gap: 1.25rem;
+}
+
+.portfolio-layout__masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1.25rem;
+}
+
+.portfolio-layout--spotlight {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.portfolio-layout__spotlight-hero .artwork-card .artwork-thumbnail {
+  height: min(52vh, 420px);
+}
+
+.portfolio-layout__spotlight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.portfolio-layout__empty {
+  grid-column: 1 / -1;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 0.9rem;
+  margin: 0;
+  padding: 1rem 0;
+}
+
+@media (max-width: 900px) {
+  .portfolio-layout--masonry {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 520px) {
+  .portfolio-layout--masonry {
+    column-count: 1;
+  }
+}

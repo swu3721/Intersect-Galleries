@@ -1,37 +1,30 @@
-.explore {
+/* Explore: same shell as Home “All artists” (uses Home.css .all-artists-section, .demo-wrap, .all-grid, …) */
+
+.explore-page {
   min-height: 100vh;
-  background: #0a0a0f;
+  background: #000;
 }
 
-.explore-header {
-  background: linear-gradient(180deg, rgba(124,58,237,0.1) 0%, transparent 100%);
-  padding: 6.5rem 1.5rem 3rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+/* Clear space under fixed navbar */
+.explore-all {
+  padding-top: calc(5.5rem + env(safe-area-inset-top, 0px));
 }
 
-.explore-header-inner {
-  max-width: 800px;
-  margin: 0 auto;
-  text-align: center;
+.explore-intro.section-intro {
+  margin-bottom: 3rem;
 }
 
-.explore-title {
-  font-size: 2.75rem;
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0 0.5rem;
-}
-
-.explore-subtitle {
-  color: rgba(255,255,255,0.5);
-  margin: 0 0 2rem;
-  font-size: 1rem;
+.explore-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  margin-bottom: 3.5rem;
 }
 
 .explore-search {
   position: relative;
   max-width: 560px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .search-icon {
@@ -41,13 +34,14 @@
   transform: translateY(-50%);
   font-size: 0.9rem;
   pointer-events: none;
+  opacity: 0.45;
 }
 
 .search-input {
   width: 100%;
   padding: 0.875rem 3rem 0.875rem 2.75rem;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   color: #fff;
   font-size: 0.95rem;
@@ -58,12 +52,12 @@
 }
 
 .search-input::placeholder {
-  color: rgba(255,255,255,0.3);
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .search-input:focus {
-  border-color: rgba(167, 139, 250, 0.5);
-  background: rgba(255,255,255,0.07);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.09);
 }
 
 .search-clear {
@@ -73,32 +67,22 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255, 255, 255, 0.45);
   cursor: pointer;
   font-size: 0.8rem;
   padding: 0.2rem;
 }
 
 .search-clear:hover {
-  color: rgba(255,255,255,0.7);
-}
-
-.explore-body {
-  padding: 2.5rem 0 5rem;
-}
-
-.explore-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .explore-tabs {
   display: flex;
   gap: 0.25rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 0;
+  flex-wrap: wrap;
 }
 
 .explore-tab {
@@ -109,7 +93,7 @@
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.45);
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -119,40 +103,39 @@
 }
 
 .explore-tab:hover {
-  color: rgba(255,255,255,0.8);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .explore-tab.active {
   color: #fff;
-  border-bottom-color: #7c3aed;
+  border-bottom-color: #fff;
 }
 
 .tab-count {
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 0.1rem 0.4rem;
   font-size: 0.72rem;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .explore-tab.active .tab-count {
-  background: rgba(124, 58, 237, 0.2);
-  color: #c4b5fd;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
 }
 
 .category-filters {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin-bottom: 2rem;
 }
 
 .category-pill {
   padding: 0.4rem 0.875rem;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 255, 255, 0.55);
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s;
@@ -160,26 +143,54 @@
 }
 
 .category-pill:hover {
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 .category-pill.active {
-  background: rgba(124, 58, 237, 0.2);
-  border-color: rgba(124, 58, 237, 0.4);
-  color: #c4b5fd;
+  background: #fff;
+  border-color: #fff;
+  color: #030213;
 }
 
-.explore-grid--users {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.25rem;
+.all-image--fallback {
+  min-height: 100%;
+  width: 100%;
 }
 
-.explore-grid--artworks {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1.25rem;
+/* Artworks tab: same 3-col rhythm as all-artists; dark cards */
+.explore-artwork-grid .artwork-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.explore-artwork-grid .artwork-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.explore-artwork-grid .artwork-title {
+  color: #fff;
+}
+
+.explore-artwork-grid .artwork-artist {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.explore-artwork-grid .artwork-artist:hover {
+  color: #fff;
+}
+
+.explore-artwork-grid .like-btn {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.explore-artwork-grid .like-icon {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.explore-artwork-grid .like-count {
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .empty-state {
@@ -193,7 +204,7 @@
 }
 
 .empty-text {
-  color: rgba(255,255,255,0.4);
+  color: rgba(255, 255, 255, 0.45);
   font-size: 1rem;
   margin: 0;
 }

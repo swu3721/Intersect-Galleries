@@ -1,8 +1,23 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import './Auth.css';
 
-export default function Signup({ onLogin }) {
+function mapAuthError(message) {
+  if (!message) return 'Something went wrong. Try again.';
+  if (message.includes('User already registered')) {
+    return 'An account with this email already exists. Try logging in.';
+  }
+  if (message.includes('username_required')) {
+    return 'Username is required.';
+  }
+  if (message.includes('duplicate key') || message.includes('unique')) {
+    return 'That username is already taken. Choose another.';
+  }
+  return message;
+}
+
+export default function Signup() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '',
@@ -11,6 +26,9 @@ export default function Signup({ onLogin }) {
     password: '',
   });
   const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [pendingVerify, setPendingVerify] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const validate = () => {
     const newErrors = {};
@@ -23,38 +41,66 @@ export default function Signup({ onLogin }) {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    // Create a new user object (demo)
-    const newUser = {
-      id: Date.now(),
-      username: form.username.toLowerCase(),
-      name: form.name,
-      bio: 'Creative professional sharing my work on Intersect.',
-      avatar: null,
-      avatarColor: '#7C3AED',
-      initials: form.name.slice(0, 2).toUpperCase(),
-      coverColor: '#4C1D95',
-      location: '',
-      website: '',
-      followers: 0,
-      following: 0,
-      artworks: [],
-      tags: [],
-    };
-    onLogin(newUser);
-    navigate(`/profile/${newUser.username}`);
+    setSubmitting(true);
+    const username = form.username.toLowerCase().trim();
+    const { data, error } = await supabase.auth.signUp({
+      email: form.email.trim(),
+      password: form.password,
+      options: {
+        data: {
+          username,
+          display_name: form.name.trim(),
+        },
+      },
+    });
+    setSubmitting(false);
+
+    if (error) {
+      setFormError(mapAuthError(error.message));
+      return;
+    }
+
+    if (data.session) {
+      navigate('/onboarding', { replace: true });
+      return;
+    }
+
+    setPendingVerify(true);
   };
 
   const handleChange = (field) => (e) => {
     setForm({ ...form, [field]: e.target.value });
     if (errors[field]) setErrors({ ...errors, [field]: undefined });
   };
+
+  if (pendingVerify) {
+    return (
+      <div className="auth-page">
+        <div className="auth-card">
+          <div className="auth-logo">
+            <span className="auth-logo-icon">✦</span>
+            <span>Intersect</span>
+          </div>
+          <h1 className="auth-title">Check your email</h1>
+          <p className="auth-subtitle">
+            We sent a confirmation link to <strong>{form.email.trim()}</strong>. After you verify,
+            you can log in to finish setting up your portfolio.
+          </p>
+          <p className="auth-switch">
+            <Link to="/login">Back to log in</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-page">
@@ -122,7 +168,10 @@ export default function Signup({ onLogin }) {
             />
             {errors.password && <span className="field-error">{errors.password}</span>}
           </div>
-          <button type="submit" className="auth-submit">Create account</button>
+          {formError && <p className="form-error">{formError}</p>}
+          <button type="submit" className="auth-submit" disabled={submitting}>
+            {submitting ? 'Creating account…' : 'Create account'}
+          </button>
         </form>
 
         <p className="auth-terms">

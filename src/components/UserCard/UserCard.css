@@ -1,7 +1,7 @@
 .user-card {
   display: block;
-  background: #141419;
-  border: 1px solid rgba(255,255,255,0.08);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   overflow: hidden;
   text-decoration: none;
@@ -10,8 +10,8 @@
 
 .user-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(167, 139, 250, 0.3);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
 }
 
 .user-card-cover {
@@ -28,7 +28,7 @@
   height: 60px;
   flex: 1;
   border-radius: 6px;
-  opacity: 0.7;
+  opacity: 0.85;
 }
 
 .user-card-body {
@@ -48,26 +48,34 @@
   color: #fff;
   margin-top: -2rem;
   margin-bottom: 0.75rem;
-  border: 3px solid #141419;
+  border: 3px solid #ffffff;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.user-card-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .user-card-name {
   font-size: 1rem;
   font-weight: 700;
-  color: #fff;
+  color: #030213;
   margin: 0 0 0.125rem;
 }
 
 .user-card-username {
   font-size: 0.8rem;
-  color: rgba(255,255,255,0.45);
+  color: rgba(0, 0, 0, 0.45);
   margin: 0 0 0.5rem;
 }
 
 .user-card-bio {
   font-size: 0.83rem;
-  color: rgba(255,255,255,0.6);
+  color: rgba(0, 0, 0, 0.55);
   margin: 0 0 0.75rem;
   line-height: 1.5;
   display: -webkit-box;
@@ -85,17 +93,17 @@
 
 .user-tag {
   padding: 0.2rem 0.625rem;
-  background: rgba(124, 58, 237, 0.15);
-  color: #c4b5fd;
+  background: #f3f3f5;
+  color: rgba(3, 2, 19, 0.75);
   border-radius: 20px;
   font-size: 0.73rem;
   font-weight: 500;
-  border: 1px solid rgba(124, 58, 237, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .user-card-stats {
   display: flex;
   gap: 0.5rem;
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.35);
+  color: rgba(0, 0, 0, 0.4);
 }
