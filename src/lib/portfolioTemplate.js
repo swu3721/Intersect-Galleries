@@ -18,7 +18,7 @@ export const TEMPLATE_OPTIONS = [
   {
     id: 'minimalist',
     name: 'Minimalist',
-    blurb: 'Maya-style Figma portfolio: lead image, two-column grid, light type.',
+    blurb: 'Lead artwork, two-column grid, and light typography for a clean editorial layout.',
   },
   {
     id: 'bold',

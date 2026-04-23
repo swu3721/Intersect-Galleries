@@ -433,22 +433,17 @@ a.btn-edit {
 .profile--tpl-artsy .profile-name-row .btn-edit,
 .profile--tpl-artsy .profile-name-row .btn-follow {
   position: absolute;
-  top: 0;
+  top: auto;
+  bottom: 100%;
   right: 0;
+  margin-bottom: 0.35rem;
+  white-space: nowrap;
 }
 
 @media (max-width: 520px) {
   .profile--tpl-artsy .profile-header-inner--artsy {
     grid-template-columns: minmax(40px, 12vw) minmax(0, 1fr) minmax(40px, 12vw);
     padding-top: 2.75rem;
-  }
-
-  .profile--tpl-artsy .profile-name-row .btn-edit,
-  .profile--tpl-artsy .profile-name-row .btn-follow {
-    top: auto;
-    bottom: 100%;
-    right: 0;
-    margin-bottom: 0.35rem;
   }
 }
 
