@@ -19,6 +19,32 @@ function websiteHref(website) {
   return `https://${w}`;
 }
 
+function ProfileArtsyFlourish({ mirror }) {
+  return (
+    <span
+      className={`profile-artsy-flourish${mirror ? ' profile-artsy-flourish--mirror' : ''}`}
+      aria-hidden="true"
+    >
+      <svg className="profile-artsy-flourish__svg" viewBox="0 0 88 260" focusable="false">
+        <path
+          d="M68 250 C32 185 22 130 26 78 C30 42 42 20 58 8"
+          fill="none"
+          stroke="#6d8f74"
+          strokeOpacity="0.52"
+          strokeWidth="1.15"
+          strokeLinecap="round"
+        />
+        <ellipse cx="44" cy="198" rx="11" ry="5.5" transform="rotate(-38 44 198)" fill="#8eb896" fillOpacity="0.36" />
+        <ellipse cx="54" cy="152" rx="9" ry="4.5" transform="rotate(18 54 152)" fill="#9dc4a5" fillOpacity="0.3" />
+        <ellipse cx="34" cy="114" rx="8" ry="4" transform="rotate(-48 34 114)" fill="#8eb896" fillOpacity="0.34" />
+        <ellipse cx="48" cy="74" rx="7" ry="3.5" transform="rotate(22 48 74)" fill="#b5d4bb" fillOpacity="0.38" />
+        <circle cx="56" cy="54" r="2.8" fill="#f6faf7" fillOpacity="0.92" />
+        <circle cx="62" cy="36" r="2" fill="#ffffff" fillOpacity="0.88" />
+      </svg>
+    </span>
+  );
+}
+
 export default function Profile() {
   const { username } = useParams();
   const navigate = useNavigate();
@@ -132,6 +158,22 @@ export default function Profile() {
   const boldDiscipline =
     user?.tags?.[0] || user?.artworks?.[0]?.category || '';
 
+  const artsyHeaderSectionStyle = useMemo(() => {
+    if (!user || template !== 'artsy') return undefined;
+    if (user.cover_image_url) {
+      return {
+        backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0) 26%, rgba(255,255,255,0.22) 48%, rgba(255,255,255,0.72) 76%, #ffffff 100%), url(${JSON.stringify(user.cover_image_url)})`,
+        backgroundSize: 'cover, cover',
+        backgroundPosition: 'center, center',
+        backgroundRepeat: 'no-repeat, no-repeat',
+      };
+    }
+    const fallback = user.coverColor && String(user.coverColor).trim() ? user.coverColor : '#ececee';
+    return {
+      backgroundImage: `linear-gradient(to bottom, ${fallback} 0%, rgba(255,255,255,0.55) 48%, #ffffff 100%)`,
+    };
+  }, [template, user]);
+
   const handleDeleteWork = useCallback(async (artwork) => {
     if (!user || user._source !== 'supabase') return;
     if (
@@ -183,40 +225,48 @@ export default function Profile() {
 
   return (
     <div className={`profile profile--tpl-${template}`}>
-      <div
-        className="profile-cover"
-        style={{
-          background: user.cover_image_url ? '#0a0a0f' : user.coverColor,
-          backgroundImage: user.cover_image_url ? `url(${user.cover_image_url})` : undefined,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        {!user.cover_image_url && (
-          <div className="profile-cover-artworks">
-            {user.artworks.slice(0, 5).map((art, i) => (
-              <div
-                key={art.id}
-                className="cover-art-strip"
-                style={{
-                  '--i': i,
-                  backgroundColor: art.color,
-                  ...(art.mediaUrl
-                    ? {
-                        backgroundImage: `url(${art.mediaUrl})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                      }
-                    : {}),
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      {template !== 'artsy' && (
+        <div
+          className="profile-cover"
+          style={{
+            background: user.cover_image_url ? '#0a0a0f' : user.coverColor,
+            backgroundImage: user.cover_image_url ? `url(${user.cover_image_url})` : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          {!user.cover_image_url && (
+            <div className="profile-cover-artworks">
+              {user.artworks.slice(0, 5).map((art, i) => (
+                <div
+                  key={art.id}
+                  className="cover-art-strip"
+                  style={{
+                    '--i': i,
+                    backgroundColor: art.color,
+                    ...(art.mediaUrl
+                      ? {
+                          backgroundImage: `url(${art.mediaUrl})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                        }
+                      : {}),
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
-      <div className="profile-header-section">
-        <div className="profile-header-inner">
+      <div
+        className={`profile-header-section${template === 'artsy' ? ` profile-header-section--artsy${user.cover_image_url ? ' profile-header-section--artsy-cover' : ''}` : ''}`}
+        style={artsyHeaderSectionStyle}
+      >
+        <div
+          className={`profile-header-inner${template === 'artsy' ? ' profile-header-inner--artsy' : ''}`}
+        >
+          {template === 'artsy' && <ProfileArtsyFlourish />}
           <div
             className="profile-avatar"
             style={{ background: user.avatar_url ? 'transparent' : user.avatarColor }}
@@ -230,7 +280,7 @@ export default function Profile() {
           <div className="profile-meta">
             <div className="profile-name-row">
               <h1
-                className={`profile-name${template === 'bold' ? ' profile-name--bold-pdf' : ''}`}
+                className={`profile-name${template === 'bold' ? ' profile-name--bold-pdf' : ''}${template === 'artsy' ? ' profile-name--artsy-script' : ''}`}
               >
                 {template === 'bold' ? user.name.toUpperCase() : user.name}
                 {template === 'bold' && (
@@ -271,12 +321,12 @@ export default function Profile() {
                       {boldDiscipline.toUpperCase()}
                     </span>
                   )}
-                  {user.location && (
+                  {/* {user.location && (
                     <span className="profile-bold-kicker__loc">
                       {boldDiscipline ? '\u00A0' : ''}
                       {user.location.toUpperCase()}
                     </span>
-                  )}
+                  )} */}
                 </p>
                 )}
                 <p className="profile-username profile-username--below-kicker">
@@ -288,6 +338,37 @@ export default function Profile() {
                   {user.bio}
                 </p>
               </>
+            ) : template === 'artsy' ? (
+              <>
+                <p className="profile-artsy-tagline">
+                  {user.bio?.trim()
+                    ? user.bio
+                    : `A portfolio by @${user.username}`}
+                </p>
+                <p className="profile-username profile-username--artsy">@{user.username}</p>
+                {(user.location || user.website) && (
+                  <p className="profile-artsy-location-web">
+                    {user.location && (
+                      <span className="profile-artsy-location-web__item">{user.location}</span>
+                    )}
+                    {user.location && user.website && (
+                      <span className="profile-artsy-location-web__sep" aria-hidden>
+                        {' · '}
+                      </span>
+                    )}
+                    {user.website && (
+                      <a
+                        href={site}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="profile-artsy-location-web__link"
+                      >
+                        {user.website}
+                      </a>
+                    )}
+                  </p>
+                )}
+              </>
             ) : (
               <>
                 <p className="profile-username">@{user.username}</p>
@@ -295,7 +376,7 @@ export default function Profile() {
               </>
             )}
 
-            {template !== 'bold' && (
+            {template !== 'bold' && template !== 'artsy' && (
             <div className="profile-details">
               {user.location && (
                 <span className="profile-detail">
@@ -313,19 +394,26 @@ export default function Profile() {
             {template === 'bold' && (user.location || user.website) && (
             <div className="profile-details profile-details--bold-inline">
               {user.location && (
-                <span className="profile-detail">
-                  <span className="profile-detail-label">BASED IN</span> {user.location}
+                <span className="profile-detail profile-detail--bold-inline">
+                  <span className="profile-detail-label">BASED IN</span>
+                  <span className="profile-detail-value">{user.location}</span>
                 </span>
               )}
               {user.website && (
-                <a href={site} target="_blank" rel="noreferrer" className="profile-detail profile-website">
-                  <span className="profile-detail-label">WEB</span> {user.website}
+                <a
+                  href={site}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="profile-detail profile-detail--bold-inline profile-website profile-website--bold-inline"
+                >
+                  <span className="profile-detail-label">WEB</span>
+                  <span className="profile-detail-value">{user.website}</span>
                 </a>
               )}
             </div>
             )}
 
-            {template !== 'bold' && (
+            {template !== 'bold' && template !== 'artsy' && (
             <div className="profile-tags">
               {user.tags.map((tag) => (
                 <span key={tag} className="profile-tag">{tag}</span>
@@ -333,6 +421,7 @@ export default function Profile() {
             </div>
             )}
 
+            {template !== 'artsy' && (
             <div className={`profile-stats${template === 'bold' ? ' profile-stats--bold' : ''}`}>
               <div className="profile-stat">
                 <span className="profile-stat-value">{user.artworks.length}</span>
@@ -347,7 +436,9 @@ export default function Profile() {
                 <span className="profile-stat-label">Following</span>
               </div>
             </div>
+            )}
           </div>
+          {template === 'artsy' && <ProfileArtsyFlourish mirror />}
         </div>
         {template === 'bold' && (
           <div className="profile-bold-footer" aria-label="Contact">
@@ -368,21 +459,23 @@ export default function Profile() {
       </div>
 
       <div className="profile-content">
-        <div className="profile-content-inner">
-          <div className="profile-tabs">
+        <div
+          className={`profile-content-inner${template === 'artsy' ? ' profile-content-inner--artsy' : ''}`}
+        >
+          <div className={`profile-tabs${template === 'artsy' ? ' profile-tabs--artsy' : ''}`}>
             <button
               type="button"
               className={`profile-tab${activeTab === 'works' ? ' active' : ''}`}
               onClick={() => setActiveTab('works')}
             >
-              Works
+              {template === 'artsy' ? 'Artworks' : 'Works'}
             </button>
             <button
               type="button"
               className={`profile-tab${activeTab === 'about' ? ' active' : ''}`}
               onClick={() => setActiveTab('about')}
             >
-              About
+              {template === 'artsy' ? 'Contact' : 'About'}
             </button>
           </div>
 
@@ -394,6 +487,7 @@ export default function Profile() {
 
           {activeTab === 'works' && (
             <PortfolioWorksSection
+              layoutRail
               template={template}
               user={user}
               username={user.username}
@@ -403,7 +497,7 @@ export default function Profile() {
           )}
 
           {activeTab === 'about' && (
-            <div className="profile-about">
+            <div className={`profile-about${template === 'artsy' ? ' profile-about--artsy' : ''}`}>
               <div className="about-section">
                 <h3>About {user.name}</h3>
                 <p>{user.bio}</p>

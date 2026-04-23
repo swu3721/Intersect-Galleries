@@ -95,26 +95,33 @@
   border: 2px solid #030213;
 }
 
-/* --- Artsy: MasonryGrid --- */
+/* --- Artsy: MasonryGrid + profile rail (editorial serif, image-led) --- */
 .portfolio-layout--artsy-wrap {
   width: 100%;
 }
 
-.portfolio-layout--artsy .artwork-card {
-  border-radius: 14px 4px 14px 4px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+.portfolio-layout--artsy .artwork-card--minimal {
+  border-radius: 0;
 }
 
-.portfolio-layout--artsy .portfolio-artsy-cell--a .artwork-card {
-  transform: rotate(-0.35deg);
+.portfolio-layout--artsy .artwork-card--minimal:hover {
+  transform: translateY(-2px);
 }
 
-.portfolio-layout--artsy .portfolio-artsy-cell--b .artwork-card {
-  transform: rotate(0.35deg);
+.portfolio-layout--artsy .artwork-card--minimal .artwork-thumbnail {
+  border-radius: 1px;
 }
 
-.portfolio-layout--artsy .artwork-card:hover {
-  transform: rotate(0deg) translateY(-2px);
+.portfolio-layout--artsy .artwork-card--minimal .artwork-title {
+  font-family: "Cormorant Garamond", "Libre Baskerville", Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.portfolio-layout--artsy .artwork-card--minimal .artwork-minimal-category {
+  font-family: "Cormorant Garamond", "Libre Baskerville", Georgia, serif;
+  letter-spacing: 0.14em;
 }
 
 .portfolio-layout__empty {
@@ -124,4 +131,181 @@
   font-size: 0.9rem;
   margin: 0;
   padding: 1rem 0;
+}
+
+/* --- Profile: horizontal scroll rail (layoutRail) --- */
+.portfolio-works-rail {
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  padding-bottom: 0.75rem;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding-left: clamp(1.5rem, 4vw, 2rem);
+  padding-right: clamp(1.5rem, 4vw, 2rem);
+  box-sizing: border-box;
+}
+
+.portfolio-works-rail__track {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1.25rem;
+  width: max-content;
+  padding: 0.25rem 0 0.5rem;
+}
+
+.portfolio-works-rail__cell {
+  flex: 0 0 auto;
+  width: min(76vw, 340px);
+  max-width: 380px;
+  scroll-snap-align: start;
+}
+
+.portfolio-works-rail--minimalist .portfolio-works-rail__cell {
+  width: min(78vw, 360px);
+}
+
+.portfolio-works-rail--bold .artwork-card {
+  border-radius: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: transparent;
+}
+
+.portfolio-works-rail--bold .artwork-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.portfolio-works-rail--bold {
+  background: #050507;
+  border-top: 2px solid #0a0a0a;
+  border-bottom: 2px solid #0a0a0a;
+  padding-top: 1rem;
+  padding-bottom: 1.25rem;
+  font-family: "Arial Narrow", "HelveticaNeue-CondensedBold", "Avenir Next Condensed",
+    "Franklin Gothic Medium", "Segoe UI", sans-serif;
+}
+
+.portfolio-works-rail--bold .portfolio-works-rail__track {
+  gap: 1.5rem;
+}
+
+.portfolio-works-rail--bold .portfolio-works-rail__cell {
+  width: min(70vw, 320px);
+}
+
+.portfolio-works-rail--bold .artwork-thumbnail {
+  min-height: clamp(170px, 24vw, 220px);
+  background: #0f1014;
+}
+
+.portfolio-works-rail--bold .artwork-footer {
+  background: #050507;
+  padding: 0.7rem 0.8rem 0.9rem;
+}
+
+.portfolio-works-rail--bold .artwork-title {
+  color: #f2f4f7;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.portfolio-works-rail--bold .artwork-artist {
+  color: rgba(242, 244, 247, 0.62);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.portfolio-works-rail--bold .artwork-artist:hover {
+  color: #fff;
+}
+
+.portfolio-works-rail--bold .like-btn {
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.portfolio-works-rail--bold .like-icon,
+.portfolio-works-rail--bold .like-count {
+  color: rgba(242, 244, 247, 0.64);
+}
+
+.portfolio-works-rail--artsy {
+  padding-top: 0.25rem;
+  padding-bottom: 1.75rem;
+}
+
+.portfolio-works-rail--artsy .portfolio-works-rail__track {
+  gap: 0.7rem;
+}
+
+.portfolio-works-rail--artsy .portfolio-works-rail__cell {
+  width: min(50vw, 308px);
+  max-width: none;
+  scroll-snap-align: start;
+}
+
+.portfolio-works-rail--artsy .portfolio-works-rail__cell:nth-child(4n + 2) {
+  width: min(34vw, 232px);
+}
+
+.portfolio-works-rail--artsy .portfolio-works-rail__cell:nth-child(4n + 3) {
+  width: min(28vw, 198px);
+}
+
+.portfolio-works-rail--artsy .portfolio-works-rail__cell:nth-child(4n) {
+  width: min(40vw, 268px);
+}
+
+.portfolio-works-rail--artsy .portfolio-works-rail__cell:nth-child(4n + 1) .artwork-thumbnail {
+  min-height: clamp(148px, 23vw, 208px);
+}
+
+.portfolio-works-rail--artsy .portfolio-works-rail__cell:nth-child(4n + 2) .artwork-thumbnail {
+  min-height: clamp(198px, 32vw, 288px);
+}
+
+.portfolio-works-rail--artsy .portfolio-works-rail__cell:nth-child(4n + 3) .artwork-thumbnail {
+  min-height: clamp(220px, 36vw, 320px);
+}
+
+.portfolio-works-rail--artsy .portfolio-works-rail__cell:nth-child(4n) .artwork-thumbnail {
+  min-height: clamp(168px, 26vw, 236px);
+}
+
+.portfolio-works-rail--artsy .artwork-thumb-media {
+  object-fit: cover;
+  object-position: center;
+}
+
+.portfolio-works-rail--artsy .artwork-card--minimal .artwork-title {
+  font-family: "Cormorant Garamond", "Libre Baskerville", Georgia, serif;
+  font-size: 1.02rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.portfolio-works-rail--artsy .artwork-card--minimal .artwork-minimal-category {
+  font-family: "Cormorant Garamond", "Libre Baskerville", Georgia, serif;
+  letter-spacing: 0.14em;
+}
+
+.portfolio-works-rail--artsy .artwork-card--minimal:hover {
+  transform: translateY(-2px);
+}
+
+.portfolio-works-rail--empty {
+  padding: 1rem 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
 }

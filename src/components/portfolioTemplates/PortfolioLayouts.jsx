@@ -12,6 +12,8 @@ export function PortfolioWorksSection({
   onDeleteWork,
   /** Onboarding / demos: no profile links on cards */
   previewMode = false,
+  /** Profile page: horizontal scrolling strip */
+  layoutRail = false,
 }) {
   const artistName = user.name;
   const artworks = user.artworks ?? [];
@@ -30,6 +32,37 @@ export function PortfolioWorksSection({
     </p>
   );
 
+  if (layoutRail) {
+    if (artworks.length === 0) {
+      return (
+        <div className={`portfolio-works-rail portfolio-works-rail--empty portfolio-works-rail--${tpl}`}>
+          {isOwner && empty}
+        </div>
+      );
+    }
+    return (
+      <section
+        className={`portfolio-works-rail portfolio-works-rail--${tpl}`}
+        aria-label="Portfolio works"
+      >
+        <div className="portfolio-works-rail__track">
+          {artworks.map((art) => (
+            <div key={art.id} className="portfolio-works-rail__cell">
+              <ArtworkCard
+                artwork={art}
+                artistName={artistName}
+                username={username}
+                minimal={tpl === 'minimalist' || tpl === 'artsy'}
+                onDelete={del(art)}
+                hideProfileLink={previewMode}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   if (tpl === 'artsy') {
     if (artworks.length === 0) {
       return (
@@ -40,20 +73,14 @@ export function PortfolioWorksSection({
     }
     return (
       <div className="portfolio-layout portfolio-layout--artsy-wrap">
-        <MasonryGrid
-          className="portfolio-layout--artsy"
-          gap="0.85rem"
-          minColumnWidth={220}
-          getCellClassName={(i) =>
-            i % 2 === 0 ? 'portfolio-artsy-cell--a' : 'portfolio-artsy-cell--b'
-          }
-        >
+        <MasonryGrid className="portfolio-layout--artsy" gap="0.85rem" minColumnWidth={220}>
           {artworks.map((art) => (
             <ArtworkCard
               key={art.id}
               artwork={art}
               artistName={artistName}
               username={username}
+              minimal
               onDelete={del(art)}
               hideProfileLink={previewMode}
             />
