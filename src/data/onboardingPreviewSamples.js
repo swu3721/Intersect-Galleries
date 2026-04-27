@@ -37,8 +37,26 @@ export const ONBOARDING_SAMPLE_ARTWORKS = [
   },
 ];
 
+const previewPieces = ONBOARDING_SAMPLE_ARTWORKS.map((a) => ({
+  ...a,
+  storage_path: null,
+}));
+
 export const ONBOARDING_SAMPLE_USER = {
   name: 'Maya Chen',
   portfolio_template: 'minimalist',
   artworks: ONBOARDING_SAMPLE_ARTWORKS,
+  collections: [
+    {
+      id: 'preview-collection',
+      title: 'Sample collection',
+      description: '',
+      coverUrl: ONBOARDING_SAMPLE_ARTWORKS[0]?.mediaUrl ?? null,
+      coverColor: '#6b7280',
+      pieceCount: ONBOARDING_SAMPLE_ARTWORKS.length,
+      hasAudio: true,
+      audioUrl: null,
+      pieces: previewPieces,
+    },
+  ],
 };

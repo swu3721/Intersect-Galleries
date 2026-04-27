@@ -14,6 +14,21 @@ function readFollowBatchMap(batch, id, which) {
   return typeof v === 'number' ? v : Number(v) || 0;
 }
 
+function mapItemRowToArtwork(row) {
+  return {
+    id: row.id,
+    collection_id: row.collection_id,
+    title: row.title,
+    category: row.category,
+    color: stringToColor(row.id),
+    likes: 0,
+    year: new Date(row.created_at).getFullYear(),
+    media_type: row.media_type,
+    storage_path: row.storage_path,
+    mediaUrl: getPortfolioPublicUrl(row.storage_path),
+  };
+}
+
 export async function fetchProfileByUsername(username, viewerId = null) {
   const u = String(username).toLowerCase().trim();
   const { data: profile, error } = await supabase
@@ -23,6 +38,14 @@ export async function fetchProfileByUsername(username, viewerId = null) {
     .maybeSingle();
   if (error) throw error;
   if (!profile) return null;
+
+  const { data: collections, error: colError } = await supabase
+    .from('portfolio_collections')
+    .select('*')
+    .eq('user_id', profile.id)
+    .order('sort_order', { ascending: true });
+
+  if (colError) throw colError;
 
   const { data: items, error: itemsError } = await supabase
     .from('portfolio_items')
@@ -55,6 +78,7 @@ export async function fetchProfileByUsername(username, viewerId = null) {
 
   return {
     profile,
+    collections: collections ?? [],
     items: items ?? [],
     stats: {
       followers,
@@ -64,24 +88,87 @@ export async function fetchProfileByUsername(username, viewerId = null) {
   };
 }
 
-export function mapProfileRowsToViewModel(profile, items, stats = {}) {
-  const list = items ?? [];
-  const artworks = list.map((row) => ({
-    id: row.id,
-    title: row.title,
-    category: row.category,
-    color: stringToColor(row.id),
-    likes: 0,
-    year: new Date(row.created_at).getFullYear(),
-    media_type: row.media_type,
-    storage_path: row.storage_path,
-    mediaUrl: getPortfolioPublicUrl(row.storage_path),
-  }));
+/**
+ * Public collection + ordered pieces for the fullscreen viewer.
+ */
+export async function fetchPublicCollection(username, collectionId) {
+  const u = String(username).toLowerCase().trim();
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('username', u)
+    .maybeSingle();
+  if (error) throw error;
+  if (!profile) return null;
 
-  const tags = [...new Set(list.map((i) => i.category).filter(Boolean))].slice(
-    0,
-    8,
-  );
+  const { data: collection, error: cErr } = await supabase
+    .from('portfolio_collections')
+    .select('*')
+    .eq('id', collectionId)
+    .eq('user_id', profile.id)
+    .maybeSingle();
+  if (cErr) throw cErr;
+  if (!collection) return null;
+
+  const { data: items, error: iErr } = await supabase
+    .from('portfolio_items')
+    .select('*')
+    .eq('collection_id', collectionId)
+    .order('sort_order', { ascending: true });
+  if (iErr) throw iErr;
+
+  return {
+    profile,
+    collection,
+    items: items ?? [],
+  };
+}
+
+export function mapProfileRowsToViewModel(profile, items, stats = {}, collectionsRows = []) {
+  const list = items ?? [];
+  const cols = [...(collectionsRows ?? [])].sort((a, b) => a.sort_order - b.sort_order);
+
+  const itemsByCol = new Map();
+  for (const row of list) {
+    const cid = row.collection_id;
+    if (!cid) continue;
+    const arr = itemsByCol.get(cid) ?? [];
+    arr.push(row);
+    itemsByCol.set(cid, arr);
+  }
+
+  const collections = cols.map((c) => {
+    const pieceRows = [...(itemsByCol.get(c.id) ?? [])].sort(
+      (a, b) => a.sort_order - b.sort_order,
+    );
+    const pieces = pieceRows.map(mapItemRowToArtwork);
+    const cover = pieces[0];
+    return {
+      id: c.id,
+      title: c.title || 'Untitled collection',
+      description: c.description || '',
+      coverUrl: cover?.mediaUrl ?? null,
+      coverColor: stringToColor(c.id),
+      pieceCount: pieces.length,
+      hasAudio: Boolean(c.audio_storage_path),
+      audioUrl: c.audio_storage_path
+        ? getPortfolioPublicUrl(c.audio_storage_path)
+        : null,
+      pieces,
+    };
+  });
+
+  const artworks = [];
+  for (const c of cols) {
+    const pieceRows = [...(itemsByCol.get(c.id) ?? [])].sort(
+      (a, b) => a.sort_order - b.sort_order,
+    );
+    for (const row of pieceRows) {
+      artworks.push(mapItemRowToArtwork(row));
+    }
+  }
+
+  const tags = [...new Set(list.map((i) => i.category).filter(Boolean))].slice(0, 8);
 
   return {
     id: profile.id,
@@ -100,6 +187,7 @@ export function mapProfileRowsToViewModel(profile, items, stats = {}) {
     website: profile.website || '',
     followers: stats.followers ?? 0,
     following: stats.following ?? 0,
+    collections,
     artworks,
     tags,
     portfolio_template: normalizePortfolioTemplate(profile.portfolio_template),
@@ -129,6 +217,45 @@ export async function deletePortfolioItemForCurrentUser(itemId, storagePath) {
   }
 }
 
+/** Delete a collection you own (cascades items), then remove files from storage. */
+export async function deletePortfolioCollectionForCurrentUser(collectionId) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.user?.id) throw new Error('You must be signed in.');
+
+  const { data: col, error: cErr } = await supabase
+    .from('portfolio_collections')
+    .select('id, audio_storage_path')
+    .eq('id', collectionId)
+    .eq('user_id', session.user.id)
+    .maybeSingle();
+  if (cErr) throw cErr;
+  if (!col) throw new Error('Collection not found.');
+
+  const { data: items, error: iErr } = await supabase
+    .from('portfolio_items')
+    .select('storage_path')
+    .eq('collection_id', collectionId)
+    .eq('user_id', session.user.id);
+  if (iErr) throw iErr;
+
+  const paths = (items ?? []).map((r) => r.storage_path).filter(Boolean);
+  if (col.audio_storage_path) paths.push(col.audio_storage_path);
+
+  const { error: delErr } = await supabase
+    .from('portfolio_collections')
+    .delete()
+    .eq('id', collectionId)
+    .eq('user_id', session.user.id);
+  if (delErr) throw delErr;
+
+  if (paths.length) {
+    const { error: stErr } = await supabase.storage.from('portfolio').remove(paths);
+    if (stErr) console.warn('Storage delete:', stErr);
+  }
+}
+
 export async function fetchProfilesForExplore(limit = 48) {
   const { data, error } = await supabase
     .from('profiles')
@@ -145,6 +272,17 @@ export async function fetchProfilesForExplore(limit = 48) {
   if (!data?.length) return [];
 
   const ids = data.map((p) => p.id);
+
+  const { data: allCollections, error: colError } = await supabase
+    .from('portfolio_collections')
+    .select('*')
+    .in('user_id', ids);
+
+  if (colError) {
+    console.error(colError);
+    return [];
+  }
+
   const { data: allItems, error: itemsError } = await supabase
     .from('portfolio_items')
     .select('*')
@@ -155,11 +293,18 @@ export async function fetchProfilesForExplore(limit = 48) {
     return [];
   }
 
-  const byUser = new Map();
-  for (const row of allItems ?? []) {
-    const list = byUser.get(row.user_id) ?? [];
+  const byUserCollections = new Map();
+  for (const row of allCollections ?? []) {
+    const list = byUserCollections.get(row.user_id) ?? [];
     list.push(row);
-    byUser.set(row.user_id, list);
+    byUserCollections.set(row.user_id, list);
+  }
+
+  const byUserItems = new Map();
+  for (const row of allItems ?? []) {
+    const list = byUserItems.get(row.user_id) ?? [];
+    list.push(row);
+    byUserItems.set(row.user_id, list);
   }
 
   const { data: batchRaw, error: batchErr } = await supabase.rpc('follow_stats_batch', {
@@ -169,7 +314,10 @@ export async function fetchProfilesForExplore(limit = 48) {
   const batch = batchRaw || { followers: {}, following: {} };
 
   return data.map((profile) => {
-    const items = (byUser.get(profile.id) ?? []).sort(
+    const collections = (byUserCollections.get(profile.id) ?? []).sort(
+      (a, b) => a.sort_order - b.sort_order,
+    );
+    const items = (byUserItems.get(profile.id) ?? []).sort(
       (a, b) => a.sort_order - b.sort_order,
     );
     const fid = profile.id;
@@ -177,7 +325,7 @@ export async function fetchProfilesForExplore(limit = 48) {
       followers: readFollowBatchMap(batch, fid, 'followers'),
       following: readFollowBatchMap(batch, fid, 'following'),
     };
-    return mapProfileRowsToViewModel(profile, items, stats);
+    return mapProfileRowsToViewModel(profile, items, stats, collections);
   });
 }
 

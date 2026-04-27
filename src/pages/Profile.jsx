@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { users } from '../data/mockData';
 import { useAuth } from '../context/AuthContext';
 import {
+  deletePortfolioCollectionForCurrentUser,
   deletePortfolioItemForCurrentUser,
   fetchProfileByUsername,
   mapProfileRowsToViewModel,
@@ -17,6 +18,33 @@ function websiteHref(website) {
   if (!w) return '';
   if (/^https?:\/\//i.test(w)) return w;
   return `https://${w}`;
+}
+
+function mockProfileWithCollections(user) {
+  const artworks = user?.artworks ?? [];
+  if (!artworks.length) return { ...user, collections: [] };
+  const pieces = artworks.map((a) => ({
+    ...a,
+    media_type: a.media_type || 'image',
+    mediaUrl: a.mediaUrl ?? null,
+    storage_path: a.storage_path,
+  }));
+  return {
+    ...user,
+    collections: [
+      {
+        id: `mock-${user.username}`,
+        title: 'Works',
+        description: '',
+        coverUrl: pieces[0]?.mediaUrl ?? null,
+        coverColor: pieces[0]?.color,
+        pieceCount: pieces.length,
+        hasAudio: false,
+        audioUrl: null,
+        pieces,
+      },
+    ],
+  };
 }
 
 function ProfileArtsyFlourish({ mirror }) {
@@ -67,18 +95,25 @@ export default function Profile() {
         const row = await fetchProfileByUsername(uname, viewerId);
         if (cancelled) return;
         if (row) {
-          setUser(mapProfileRowsToViewModel(row.profile, row.items, row.stats));
+          setUser(
+            mapProfileRowsToViewModel(
+              row.profile,
+              row.items,
+              row.stats,
+              row.collections ?? [],
+            ),
+          );
           setFollowing(row.stats?.viewerFollows ?? false);
         } else {
           const mock = users.find((u) => u.username === uname);
           setFollowing(false);
           setUser(
             mock
-              ? {
+              ? mockProfileWithCollections({
                   ...mock,
                   portfolio_template: mock.portfolio_template || 'minimalist',
                   _source: 'mock',
-                }
+                })
               : null,
           );
         }
@@ -89,11 +124,11 @@ export default function Profile() {
           setFollowing(false);
           setUser(
             mock
-              ? {
+              ? mockProfileWithCollections({
                   ...mock,
                   portfolio_template: mock.portfolio_template || 'minimalist',
                   _source: 'mock',
-                }
+                })
               : null,
           );
         }
@@ -156,7 +191,10 @@ export default function Profile() {
   const template = normalizePortfolioTemplate(user?.portfolio_template);
   const site = user ? websiteHref(user.website) : '';
   const boldDiscipline =
-    user?.tags?.[0] || user?.artworks?.[0]?.category || '';
+    user?.tags?.[0]
+    || user?.collections?.[0]?.pieces?.[0]?.category
+    || user?.artworks?.[0]?.category
+    || '';
 
   const artsyHeaderSectionStyle = useMemo(() => {
     if (!user || template !== 'artsy') return undefined;
@@ -189,14 +227,47 @@ export default function Profile() {
       setUser((prev) => {
         if (!prev) return prev;
         const nextArtworks = prev.artworks.filter((a) => a.id !== artwork.id);
+        const nextCollections = (prev.collections ?? []).map((c) => ({
+          ...c,
+          pieces: (c.pieces ?? []).filter((p) => p.id !== artwork.id),
+          pieceCount: (c.pieces ?? []).filter((p) => p.id !== artwork.id).length,
+        }));
         const tags = [...new Set(nextArtworks.map((i) => i.category).filter(Boolean))].slice(
           0,
           8,
         );
-        return { ...prev, artworks: nextArtworks, tags };
+        return { ...prev, artworks: nextArtworks, collections: nextCollections, tags };
       });
     } catch (e) {
       setWorkDeleteError(e.message || 'Could not delete that work.');
+    }
+  }, [user]);
+
+  const handleDeleteCollection = useCallback(async (col) => {
+    if (!user || user._source !== 'supabase') return;
+    if (
+      !window.confirm(
+        `Remove the collection “${col.title}” and all pieces in it? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    setWorkDeleteError('');
+    try {
+      await deletePortfolioCollectionForCurrentUser(col.id);
+      setUser((prev) => {
+        if (!prev) return prev;
+        const removedIds = new Set((col.pieces ?? []).map((p) => p.id));
+        const nextArtworks = (prev.artworks ?? []).filter((a) => !removedIds.has(a.id));
+        const nextCollections = (prev.collections ?? []).filter((c) => c.id !== col.id);
+        const tags = [...new Set(nextArtworks.map((i) => i.category).filter(Boolean))].slice(
+          0,
+          8,
+        );
+        return { ...prev, artworks: nextArtworks, collections: nextCollections, tags };
+      });
+    } catch (e) {
+      setWorkDeleteError(e.message || 'Could not delete that collection.');
     }
   }, [user]);
 
@@ -220,8 +291,14 @@ export default function Profile() {
     );
   }
 
+  const onDeleteCollection =
+    isOwner && user._source === 'supabase' ? handleDeleteCollection : undefined;
   const onDeleteWork =
     isOwner && user._source === 'supabase' ? handleDeleteWork : undefined;
+
+  const workStatCount =
+    user.collections?.length > 0 ? user.collections.length : user.artworks.length;
+  const workStatLabel = user.collections?.length > 0 ? 'Collections' : 'Works';
 
   return (
     <div className={`profile profile--tpl-${template}`}>
@@ -321,6 +398,12 @@ export default function Profile() {
                       {boldDiscipline.toUpperCase()}
                     </span>
                   )}
+                  {/* {user.location && (
+                    <span className="profile-bold-kicker__loc">
+                      {boldDiscipline ? '\u00A0' : ''}
+                      {user.location.toUpperCase()}
+                    </span>
+                  )} */}
                 </p>
                 )}
                 <p className="profile-username profile-username--below-kicker">
@@ -418,8 +501,8 @@ export default function Profile() {
             {template !== 'artsy' && (
             <div className={`profile-stats${template === 'bold' ? ' profile-stats--bold' : ''}`}>
               <div className="profile-stat">
-                <span className="profile-stat-value">{user.artworks.length}</span>
-                <span className="profile-stat-label">Works</span>
+                <span className="profile-stat-value">{workStatCount}</span>
+                <span className="profile-stat-label">{workStatLabel}</span>
               </div>
               <div className="profile-stat">
                 <span className="profile-stat-value">{user.followers.toLocaleString()}</span>
@@ -486,6 +569,7 @@ export default function Profile() {
               user={user}
               username={user.username}
               isOwner={isOwner}
+              onDeleteCollection={onDeleteCollection}
               onDeleteWork={onDeleteWork}
             />
           )}

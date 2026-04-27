@@ -14,6 +14,7 @@ import './Auth.css';
 import './Onboarding.css';
 
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
+const MAX_AUDIO_BYTES = 25 * 1024 * 1024;
 
 function isAllowedMedia(file) {
   if (file.type.startsWith('image/')) return true;
@@ -21,8 +22,34 @@ function isAllowedMedia(file) {
   return false;
 }
 
+function isAllowedAudio(file) {
+  if (!file) return false;
+  if (file.type.startsWith('audio/')) return true;
+  const ext = file.name.split('.').pop()?.toLowerCase() || '';
+  return ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'webm'].includes(ext);
+}
+
 function mediaTypeFromFile(file) {
   return file.type.startsWith('video/') ? 'video' : 'image';
+}
+
+function audioExtFromFile(file) {
+  const fromName = file.name.split('.').pop()?.replace(/[^a-z0-9]/gi, '') || '';
+  if (fromName && fromName.length <= 5) return fromName.toLowerCase();
+  if (file.type.includes('mpeg')) return 'mp3';
+  if (file.type.includes('wav')) return 'wav';
+  if (file.type.includes('ogg')) return 'ogg';
+  if (file.type.includes('mp4')) return 'm4a';
+  return 'audio';
+}
+
+function validateAudio(file) {
+  if (!file) return null;
+  if (!isAllowedAudio(file)) {
+    return 'Soundtrack: use a common audio format (MP3, WAV, OGG, M4A, WebM).';
+  }
+  if (file.size > MAX_AUDIO_BYTES) return 'Soundtrack must be 25MB or smaller.';
+  return null;
 }
 
 async function uploadToPortfolio(userId, relativePath, file) {
@@ -56,9 +83,19 @@ export default function Onboarding() {
   const [website, setWebsite] = useState(profile?.website || '');
   const [avatarFile, setAvatarFile] = useState(null);
   const [coverFile, setCoverFile] = useState(null);
-  const [works, setWorks] = useState([
-    { key: crypto.randomUUID(), file: null, title: '', category: categories[1] || 'Mixed Media' },
-  ]);
+  const initialPiece = () => ({
+    key: crypto.randomUUID(),
+    file: null,
+    title: '',
+    category: categories[1] || 'Mixed Media',
+  });
+  const initialCollection = () => ({
+    key: crypto.randomUUID(),
+    title: '',
+    audioFile: null,
+    pieces: [initialPiece()],
+  });
+  const [collectionsForm, setCollectionsForm] = useState([initialCollection()]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -74,19 +111,66 @@ export default function Onboarding() {
     return null;
   };
 
-  const addWorkRow = () => {
-    setWorks((w) => [
-      ...w,
-      { key: crypto.randomUUID(), file: null, title: '', category: categoryChoices[0] || 'Mixed Media' },
-    ]);
+  const addCollectionBlock = () => {
+    setCollectionsForm((rows) => [...rows, initialCollection()]);
   };
 
-  const removeWorkRow = (key) => {
-    setWorks((w) => (w.length <= 1 ? w : w.filter((row) => row.key !== key)));
+  const removeCollectionBlock = (colKey) => {
+    setCollectionsForm((rows) =>
+      rows.length <= 1 ? rows : rows.filter((r) => r.key !== colKey),
+    );
   };
 
-  const updateWork = (key, patch) => {
-    setWorks((w) => w.map((row) => (row.key === key ? { ...row, ...patch } : row)));
+  const updateCollectionBlock = (colKey, patch) => {
+    setCollectionsForm((rows) =>
+      rows.map((r) => (r.key === colKey ? { ...r, ...patch } : r)),
+    );
+  };
+
+  const addPieceRow = (colKey) => {
+    setCollectionsForm((rows) =>
+      rows.map((r) =>
+        r.key === colKey
+          ? {
+              ...r,
+              pieces: [
+                ...r.pieces,
+                {
+                  key: crypto.randomUUID(),
+                  file: null,
+                  title: '',
+                  category: categoryChoices[0] || 'Mixed Media',
+                },
+              ],
+            }
+          : r,
+      ),
+    );
+  };
+
+  const removePieceRow = (colKey, pieceKey) => {
+    setCollectionsForm((rows) =>
+      rows.map((r) => {
+        if (r.key !== colKey) return r;
+        if (r.pieces.length <= 1) return r;
+        return { ...r, pieces: r.pieces.filter((p) => p.key !== pieceKey) };
+      }),
+    );
+  };
+
+  const updatePiece = (colKey, pieceKey, patch) => {
+    setCollectionsForm((rows) =>
+      rows.map((r) =>
+        r.key === colKey
+          ? {
+              ...r,
+              pieces: r.pieces.map((p) =>
+                p.key === pieceKey ? { ...p, ...patch } : p,
+              ),
+            }
+          : r,
+      ),
+    );
   };
 
   const finish = async () => {
@@ -107,12 +191,21 @@ export default function Onboarding() {
       return;
     }
 
-    for (const row of works) {
-      if (!row.file) continue;
-      const err = validateFiles(row.file);
-      if (err) {
-        setError(err);
-        return;
+    for (const block of collectionsForm) {
+      if (block.audioFile) {
+        const aerr = validateAudio(block.audioFile);
+        if (aerr) {
+          setError(aerr);
+          return;
+        }
+      }
+      for (const row of block.pieces) {
+        if (!row.file) continue;
+        const err = validateFiles(row.file);
+        if (err) {
+          setError(err);
+          return;
+        }
       }
     }
 
@@ -160,32 +253,69 @@ export default function Onboarding() {
 
       if (upProfError) throw upProfError;
 
-      const rowsToInsert = [];
-      let order = 0;
-      for (const row of works) {
-        if (!row.file) continue;
-        const safeName = row.file.name.replace(/[^\w.-]+/g, '_');
-        const storage_path = await uploadToPortfolio(
-          userId,
-          `items/${crypto.randomUUID()}/${safeName}`,
-          row.file,
-        );
-        rowsToInsert.push({
-          user_id: userId,
-          title: row.title.trim() || 'Untitled',
-          category: row.category || 'Mixed Media',
-          media_type: mediaTypeFromFile(row.file),
-          storage_path,
-          sort_order: order,
-        });
-        order += 1;
-      }
+      const { data: sortRows } = await supabase
+        .from('portfolio_collections')
+        .select('sort_order')
+        .eq('user_id', userId);
 
-      if (rowsToInsert.length) {
-        const { error: insError } = await supabase
-          .from('portfolio_items')
-          .insert(rowsToInsert);
-        if (insError) throw insError;
+      const sortBase =
+        sortRows?.length > 0
+          ? Math.max(...sortRows.map((r) => Number(r.sort_order) || 0)) + 1
+          : 0;
+
+      let colOffset = 0;
+      for (const block of collectionsForm) {
+        const piecesWithFiles = block.pieces.filter((p) => p.file);
+        if (piecesWithFiles.length === 0) continue;
+
+        const collId = crypto.randomUUID();
+        let audio_storage_path = null;
+        if (block.audioFile) {
+          const ext = audioExtFromFile(block.audioFile);
+          audio_storage_path = await uploadToPortfolio(
+            userId,
+            `collections/${collId}/audio.${ext}`,
+            block.audioFile,
+          );
+        }
+
+        const { error: colErr } = await supabase.from('portfolio_collections').insert({
+          id: collId,
+          user_id: userId,
+          title: block.title.trim() || 'Untitled collection',
+          audio_storage_path,
+          sort_order: sortBase + colOffset,
+        });
+        if (colErr) throw colErr;
+        colOffset += 1;
+
+        const rowsToInsert = [];
+        let order = 0;
+        for (const row of piecesWithFiles) {
+          const safeName = row.file.name.replace(/[^\w.-]+/g, '_');
+          const storage_path = await uploadToPortfolio(
+            userId,
+            `items/${crypto.randomUUID()}/${safeName}`,
+            row.file,
+          );
+          rowsToInsert.push({
+            user_id: userId,
+            collection_id: collId,
+            title: row.title.trim() || 'Untitled',
+            category: row.category || 'Mixed Media',
+            media_type: mediaTypeFromFile(row.file),
+            storage_path,
+            sort_order: order,
+          });
+          order += 1;
+        }
+
+        if (rowsToInsert.length) {
+          const { error: insError } = await supabase
+            .from('portfolio_items')
+            .insert(rowsToInsert);
+          if (insError) throw insError;
+        }
       }
 
       await refreshProfile();
@@ -316,56 +446,127 @@ export default function Onboarding() {
         {step === 2 && (
           <div className="onboarding-step">
             <p className="onboarding-lead">
-              Add one or more works (optional). Images or MP4/WebM, up to 50MB each.
+              Add one or more collections (optional). Each collection can include several images or
+              videos (MP4/WebM, up to 50MB each). You can attach an optional soundtrack per
+              collection.
             </p>
-            <div className="works-editor">
-              {works.map((row) => (
-                <div key={row.key} className="work-row">
+            <div className="collections-editor">
+              {collectionsForm.map((block, blockIndex) => (
+                <div key={block.key} className="collection-block">
+                  <div className="collection-block__head">
+                    <h3 className="collection-block__label">
+                      Collection {blockIndex + 1}
+                    </h3>
+                    {collectionsForm.length > 1 && (
+                      <button
+                        type="button"
+                        className="btn-remove-row"
+                        onClick={() => removeCollectionBlock(block.key)}
+                      >
+                        Remove collection
+                      </button>
+                    )}
+                  </div>
                   <div className="form-group">
-                    <label>File</label>
+                    <label htmlFor={`ob-col-title-${block.key}`}>Collection title</label>
                     <input
-                      type="file"
-                      accept="image/*,video/mp4,video/webm"
+                      id={`ob-col-title-${block.key}`}
+                      type="text"
+                      value={block.title}
                       onChange={(e) =>
-                        updateWork(row.key, { file: e.target.files?.[0] || null })
+                        updateCollectionBlock(block.key, { title: e.target.value })
+                      }
+                      placeholder="e.g. Summer studies"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor={`ob-col-audio-${block.key}`}>
+                      Soundtrack (optional — MP3, WAV, OGG, M4A… up to 25MB)
+                    </label>
+                    <input
+                      id={`ob-col-audio-${block.key}`}
+                      type="file"
+                      accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm"
+                      onChange={(e) =>
+                        updateCollectionBlock(block.key, {
+                          audioFile: e.target.files?.[0] || null,
+                        })
                       }
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Title</label>
-                    <input
-                      type="text"
-                      value={row.title}
-                      onChange={(e) => updateWork(row.key, { title: e.target.value })}
-                      placeholder="Piece title"
-                    />
+                  <p className="onboarding-piece-intro">Pieces in this collection</p>
+                  <div className="works-editor">
+                    {block.pieces.map((row) => (
+                      <div key={row.key} className="work-row">
+                        <div className="form-group">
+                          <label>File</label>
+                          <input
+                            type="file"
+                            accept="image/*,video/mp4,video/webm"
+                            onChange={(e) =>
+                              updatePiece(block.key, row.key, {
+                                file: e.target.files?.[0] || null,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Title</label>
+                          <input
+                            type="text"
+                            value={row.title}
+                            onChange={(e) =>
+                              updatePiece(block.key, row.key, { title: e.target.value })
+                            }
+                            placeholder="Piece title"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Category</label>
+                          <select
+                            className="onboarding-select"
+                            value={row.category}
+                            onChange={(e) =>
+                              updatePiece(block.key, row.key, {
+                                category: e.target.value,
+                              })
+                            }
+                          >
+                            {categoryChoices.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        {block.pieces.length > 1 && (
+                          <button
+                            type="button"
+                            className="btn-remove-row"
+                            onClick={() => removePieceRow(block.key, row.key)}
+                          >
+                            Remove piece
+                          </button>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  <div className="form-group">
-                    <label>Category</label>
-                    <select
-                      className="onboarding-select"
-                      value={row.category}
-                      onChange={(e) => updateWork(row.key, { category: e.target.value })}
-                    >
-                      {categoryChoices.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {works.length > 1 && (
-                    <button
-                      type="button"
-                      className="btn-remove-row"
-                      onClick={() => removeWorkRow(row.key)}
-                    >
-                      Remove
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    className="btn-secondary btn-add-row"
+                    onClick={() => addPieceRow(block.key)}
+                  >
+                    + Add another piece
+                  </button>
                 </div>
               ))}
             </div>
-            <button type="button" className="btn-secondary btn-add-row" onClick={addWorkRow}>
-              + Add another work
+            <button
+              type="button"
+              className="btn-secondary btn-add-row"
+              onClick={addCollectionBlock}
+            >
+              + Add another collection
             </button>
             {error && <p className="form-error">{error}</p>}
             <div className="onboarding-actions">

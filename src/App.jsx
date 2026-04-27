@@ -5,6 +5,7 @@ import Footer from './components/Footer/Footer';
 import Home from './pages/Home';
 import Explore from './pages/Explore';
 import Profile from './pages/Profile';
+import CollectionView from './pages/CollectionView';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Onboarding from './pages/Onboarding';
@@ -53,6 +54,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
+          <Route path="/profile/:username/collection/:collectionId" element={<CollectionView />} />
           <Route path="/profile/:username" element={<Profile />} />
           <Route
             path="/login"

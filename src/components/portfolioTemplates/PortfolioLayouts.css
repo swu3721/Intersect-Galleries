@@ -309,3 +309,84 @@
   padding-left: 0;
   padding-right: 0;
 }
+
+/* Collection cards (bold / rail / artsy) */
+.portfolio-layout__bold-hero .collection-card {
+  border-radius: 0;
+  border: 3px solid #030213;
+  box-shadow: 8px 8px 0 rgba(3, 2, 19, 0.12);
+}
+
+.portfolio-layout__bold-hero .collection-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 10px 10px 0 rgba(3, 2, 19, 0.16);
+}
+
+.portfolio-layout__bold-grid .collection-card {
+  border-radius: 0;
+  border: 2px solid #030213;
+}
+
+.portfolio-works-rail--bold .collection-card {
+  border-radius: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: transparent;
+  box-shadow: none;
+}
+
+.portfolio-works-rail--bold .collection-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.portfolio-works-rail--bold .collection-card__meta {
+  background: #050507;
+  padding: 0.7rem 0.8rem 0.9rem;
+}
+
+.portfolio-works-rail--bold .collection-card__title {
+  color: #f2f4f7;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.portfolio-works-rail--bold .collection-card__count {
+  color: rgba(242, 244, 247, 0.55);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.portfolio-works-rail--bold .collection-card__thumb {
+  min-height: clamp(170px, 24vw, 220px);
+  background: #0f1014;
+}
+
+.portfolio-works-rail--artsy .collection-card--minimal .collection-card__title {
+  font-family: "Cormorant Garamond", "Libre Baskerville", Georgia, serif;
+  font-size: 1.02rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.portfolio-works-rail--artsy .collection-card--minimal .collection-card__count {
+  font-family: "Cormorant Garamond", "Libre Baskerville", Georgia, serif;
+  letter-spacing: 0.14em;
+  text-transform: none;
+  font-size: 0.82rem;
+}
+
+.portfolio-layout--artsy .collection-card--minimal .collection-card__title {
+  font-family: "Cormorant Garamond", "Libre Baskerville", Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.portfolio-layout--artsy .collection-card--minimal .collection-card__count {
+  font-family: "Cormorant Garamond", "Libre Baskerville", Georgia, serif;
+  letter-spacing: 0.14em;
+}
