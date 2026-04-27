@@ -14,7 +14,6 @@ import './Auth.css';
 import './Onboarding.css';
 
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
-const MAX_AUDIO_BYTES = 25 * 1024 * 1024;
 
 function isAllowedMedia(file) {
   if (file.type.startsWith('image/')) return true;
@@ -22,34 +21,8 @@ function isAllowedMedia(file) {
   return false;
 }
 
-function isAllowedAudio(file) {
-  if (!file) return false;
-  if (file.type.startsWith('audio/')) return true;
-  const ext = file.name.split('.').pop()?.toLowerCase() || '';
-  return ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'webm'].includes(ext);
-}
-
 function mediaTypeFromFile(file) {
   return file.type.startsWith('video/') ? 'video' : 'image';
-}
-
-function audioExtFromFile(file) {
-  const fromName = file.name.split('.').pop()?.replace(/[^a-z0-9]/gi, '') || '';
-  if (fromName && fromName.length <= 5) return fromName.toLowerCase();
-  if (file.type.includes('mpeg')) return 'mp3';
-  if (file.type.includes('wav')) return 'wav';
-  if (file.type.includes('ogg')) return 'ogg';
-  if (file.type.includes('mp4')) return 'm4a';
-  return 'audio';
-}
-
-function validateAudio(file) {
-  if (!file) return null;
-  if (!isAllowedAudio(file)) {
-    return 'Soundtrack: use a common audio format (MP3, WAV, OGG, M4A, WebM).';
-  }
-  if (file.size > MAX_AUDIO_BYTES) return 'Soundtrack must be 25MB or smaller.';
-  return null;
 }
 
 async function uploadToPortfolio(userId, relativePath, file) {
@@ -92,7 +65,6 @@ export default function Onboarding() {
   const initialCollection = () => ({
     key: crypto.randomUUID(),
     title: '',
-    audioFile: null,
     pieces: [initialPiece()],
   });
   const [collectionsForm, setCollectionsForm] = useState([initialCollection()]);
@@ -192,13 +164,6 @@ export default function Onboarding() {
     }
 
     for (const block of collectionsForm) {
-      if (block.audioFile) {
-        const aerr = validateAudio(block.audioFile);
-        if (aerr) {
-          setError(aerr);
-          return;
-        }
-      }
       for (const row of block.pieces) {
         if (!row.file) continue;
         const err = validateFiles(row.file);
@@ -269,21 +234,12 @@ export default function Onboarding() {
         if (piecesWithFiles.length === 0) continue;
 
         const collId = crypto.randomUUID();
-        let audio_storage_path = null;
-        if (block.audioFile) {
-          const ext = audioExtFromFile(block.audioFile);
-          audio_storage_path = await uploadToPortfolio(
-            userId,
-            `collections/${collId}/audio.${ext}`,
-            block.audioFile,
-          );
-        }
 
         const { error: colErr } = await supabase.from('portfolio_collections').insert({
           id: collId,
           user_id: userId,
           title: block.title.trim() || 'Untitled collection',
-          audio_storage_path,
+          audio_storage_path: null,
           sort_order: sortBase + colOffset,
         });
         if (colErr) throw colErr;
@@ -447,8 +403,7 @@ export default function Onboarding() {
           <div className="onboarding-step">
             <p className="onboarding-lead">
               Add one or more collections (optional). Each collection can include several images or
-              videos (MP4/WebM, up to 50MB each). You can attach an optional soundtrack per
-              collection.
+              videos (MP4/WebM, up to 50MB each).
             </p>
             <div className="collections-editor">
               {collectionsForm.map((block, blockIndex) => (
@@ -477,21 +432,6 @@ export default function Onboarding() {
                         updateCollectionBlock(block.key, { title: e.target.value })
                       }
                       placeholder="e.g. Summer studies"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor={`ob-col-audio-${block.key}`}>
-                      Soundtrack (optional — MP3, WAV, OGG, M4A… up to 25MB)
-                    </label>
-                    <input
-                      id={`ob-col-audio-${block.key}`}
-                      type="file"
-                      accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm"
-                      onChange={(e) =>
-                        updateCollectionBlock(block.key, {
-                          audioFile: e.target.files?.[0] || null,
-                        })
-                      }
                     />
                   </div>
                   <p className="onboarding-piece-intro">Pieces in this collection</p>

@@ -57,18 +57,6 @@
   background: rgba(120, 20, 20, 0.85);
 }
 
-.collection-card__audio-badge {
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  z-index: 1;
-  font-size: 0.9rem;
-  padding: 0.2rem 0.45rem;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.45);
-  color: #f5f5f8;
-}
-
 .collection-card__meta {
   padding: 0.65rem 0.75rem 0.85rem;
 }

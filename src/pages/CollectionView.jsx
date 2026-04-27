@@ -23,7 +23,6 @@ function enrichMockUserForCollectionView(mock) {
     collection: {
       id: `mock-${mock.username}`,
       title: 'Works',
-      audio_storage_path: null,
     },
     items: pieces.map((p, i) => ({
       id: p.id,
@@ -43,15 +42,12 @@ export default function CollectionView() {
   const { username, collectionId } = useParams();
   const navigate = useNavigate();
   const stripRef = useRef(null);
-  const audioRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [profile, setProfile] = useState(null);
   const [collectionTitle, setCollectionTitle] = useState('');
-  const [audioUrl, setAudioUrl] = useState(null);
   const [pieces, setPieces] = useState([]);
-  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,11 +61,6 @@ export default function CollectionView() {
         if (row) {
           setProfile(row.profile);
           setCollectionTitle(row.collection.title || 'Collection');
-          setAudioUrl(
-            row.collection.audio_storage_path
-              ? getPortfolioPublicUrl(row.collection.audio_storage_path)
-              : null,
-          );
           const ordered = [...(row.items ?? [])].sort(
             (a, b) => a.sort_order - b.sort_order,
           );
@@ -93,7 +84,6 @@ export default function CollectionView() {
           if (cancelled) return;
           setProfile(bundle.profile);
           setCollectionTitle(bundle.collection.title);
-          setAudioUrl(null);
           const ordered = [...(bundle.items ?? [])].sort(
             (a, b) => a.sort_order - b.sort_order,
           );
@@ -123,35 +113,6 @@ export default function CollectionView() {
       cancelled = true;
     };
   }, [username, collectionId]);
-
-  const toggleAudio = useCallback(async () => {
-    const el = audioRef.current;
-    if (!el) return;
-    if (playing) {
-      el.pause();
-      setPlaying(false);
-      return;
-    }
-    try {
-      await el.play();
-      setPlaying(true);
-    } catch {
-      setPlaying(false);
-    }
-  }, [playing]);
-
-  useEffect(() => {
-    const el = audioRef.current;
-    if (!el) return;
-    const onEnded = () => setPlaying(false);
-    const onPause = () => setPlaying(false);
-    el.addEventListener('ended', onEnded);
-    el.addEventListener('pause', onPause);
-    return () => {
-      el.removeEventListener('ended', onEnded);
-      el.removeEventListener('pause', onPause);
-    };
-  }, [audioUrl]);
 
   const goNeighbor = useCallback((dir) => {
     const el = stripRef.current;
@@ -246,18 +207,6 @@ export default function CollectionView() {
           </section>
         ))}
       </div>
-
-      {audioUrl && (
-        <div className="collection-view__audio-bar">
-          <audio ref={audioRef} src={audioUrl} loop preload="metadata" />
-          <button type="button" className="collection-view__audio-btn" onClick={() => void toggleAudio()}>
-            {playing ? 'Pause soundtrack' : 'Play soundtrack'}
-          </button>
-          <span className="collection-view__audio-hint">
-            Browsers require a tap to play audio.
-          </span>
-        </div>
-      )}
 
       <p className="collection-view__hint">Swipe horizontally · ← → keys</p>
     </div>

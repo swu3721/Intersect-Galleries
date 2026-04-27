@@ -9,7 +9,7 @@ export default function CollectionCard({
   /** Onboarding previews: no navigation */
   previewMode = false,
 }) {
-  const { title, coverUrl, coverColor, pieceCount, hasAudio } = collection;
+  const { title, coverUrl, coverColor, pieceCount } = collection;
   const to = `/profile/${username}/collection/${collection.id}`;
 
   const thumb = (
@@ -40,11 +40,6 @@ export default function CollectionCard({
         >
           Remove
         </button>
-      )}
-      {hasAudio && (
-        <span className="collection-card__audio-badge" title="Has soundtrack">
-          ♪
-        </span>
       )}
     </div>
   );

@@ -150,10 +150,6 @@ export function mapProfileRowsToViewModel(profile, items, stats = {}, collection
       coverUrl: cover?.mediaUrl ?? null,
       coverColor: stringToColor(c.id),
       pieceCount: pieces.length,
-      hasAudio: Boolean(c.audio_storage_path),
-      audioUrl: c.audio_storage_path
-        ? getPortfolioPublicUrl(c.audio_storage_path)
-        : null,
       pieces,
     };
   });

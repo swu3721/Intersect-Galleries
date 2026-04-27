@@ -39,8 +39,6 @@ function mockProfileWithCollections(user) {
         coverUrl: pieces[0]?.mediaUrl ?? null,
         coverColor: pieces[0]?.color,
         pieceCount: pieces.length,
-        hasAudio: false,
-        audioUrl: null,
         pieces,
       },
     ],
