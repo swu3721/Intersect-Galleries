@@ -15,6 +15,7 @@ function readFollowBatchMap(batch, id, which) {
 }
 
 function mapItemRowToArtwork(row) {
+  const createdAt = row.created_at || null;
   return {
     id: row.id,
     collection_id: row.collection_id,
@@ -22,7 +23,8 @@ function mapItemRowToArtwork(row) {
     category: row.category,
     color: stringToColor(row.id),
     likes: 0,
-    year: new Date(row.created_at).getFullYear(),
+    year: createdAt ? new Date(createdAt).getFullYear() : new Date().getFullYear(),
+    created_at: createdAt,
     media_type: row.media_type,
     storage_path: row.storage_path,
     mediaUrl: getPortfolioPublicUrl(row.storage_path),
