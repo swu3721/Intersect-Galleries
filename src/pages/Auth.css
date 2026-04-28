@@ -34,9 +34,11 @@
   margin-bottom: 2rem;
 }
 
-.auth-logo-icon {
-  color: rgba(3, 2, 19, 0.35);
-  font-size: 1.2rem;
+.auth-logo-mark {
+  height: 2.25rem;
+  width: auto;
+  display: block;
+  object-fit: contain;
 }
 
 .auth-title {

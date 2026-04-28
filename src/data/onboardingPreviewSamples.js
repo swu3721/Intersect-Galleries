@@ -37,24 +37,30 @@ export const ONBOARDING_SAMPLE_ARTWORKS = [
   },
 ];
 
-const previewPieces = ONBOARDING_SAMPLE_ARTWORKS.map((a) => ({
-  ...a,
-  storage_path: null,
-}));
+function previewCollection(id, title, artworkIndices) {
+  const pieces = artworkIndices.map((i) => ({
+    ...ONBOARDING_SAMPLE_ARTWORKS[i],
+    storage_path: null,
+  }));
+  return {
+    id,
+    title,
+    description: '',
+    coverUrl: pieces[0]?.mediaUrl ?? null,
+    coverColor: '#6b7280',
+    pieceCount: pieces.length,
+    pieces,
+  };
+}
 
+/** Three collections so template previews show lead + grid (minimalist / bold) and masonry (artsy), like real profiles. */
 export const ONBOARDING_SAMPLE_USER = {
   name: 'Maya Chen',
   portfolio_template: 'minimalist',
   artworks: ONBOARDING_SAMPLE_ARTWORKS,
   collections: [
-    {
-      id: 'preview-collection',
-      title: 'Sample collection',
-      description: '',
-      coverUrl: ONBOARDING_SAMPLE_ARTWORKS[0]?.mediaUrl ?? null,
-      coverColor: '#6b7280',
-      pieceCount: ONBOARDING_SAMPLE_ARTWORKS.length,
-      pieces: previewPieces,
-    },
+    previewCollection('ob-col-recent', 'Recent work', [0, 1]),
+    previewCollection('ob-col-studies', 'Studies', [2, 3]),
+    previewCollection('ob-col-archive', 'Archive', [4]),
   ],
 };

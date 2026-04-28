@@ -154,6 +154,11 @@ export default function Home() {
             transition={{ delay: 0.5, duration: 1.2, ease: heroEase }}
             style={{ x: heroX, opacity: heroOpacity }}
           >
+            <img
+              src="/intersect-logo.png"
+              alt=""
+              className="demo-hero-logo"
+            />
             <h1>
               DISCOVER
               <br />

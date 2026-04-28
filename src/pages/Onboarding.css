@@ -53,15 +53,43 @@
 
 .template-preview-frame {
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #ffffff;
-  padding: 1rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
+/* Match profile “works” area: same surface colors as .profile--tpl-* .profile-content */
+.template-preview-frame--minimalist {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fafafa;
+}
+
+.template-preview-shell--minimalist {
+  padding: clamp(1rem, 2.5vw, 1.75rem) clamp(0.75rem, 2vw, 1.25rem) clamp(1.25rem, 3vw, 2rem);
+}
+
+.template-preview-frame--bold {
+  border: 2px solid #0a0a0a;
+  background: #fafafa;
+  box-shadow: 6px 6px 0 rgba(3, 2, 19, 0.08);
+}
+
+.template-preview-shell--bold {
+  padding: clamp(1rem, 2.5vw, 1.5rem) clamp(0.65rem, 1.8vw, 1.1rem) clamp(1.25rem, 3vw, 2rem);
+}
+
+.template-preview-frame--artsy {
+  border: 1px solid rgba(10, 10, 10, 0.1);
+  background: #ffffff;
+}
+
+.template-preview-shell--artsy {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 3vw, 2rem);
+}
+
 .template-preview-frame .portfolio-layout {
-  min-width: min(100%, 520px);
+  width: 100%;
 }
 
 .template-card {

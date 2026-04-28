@@ -1,14 +1,14 @@
 .collection-view {
+  --collection-nav-pad: clamp(5.75rem, 11vw, 9rem);
   min-height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
-  background: #0a0a0f;
-  color: #f4f4f8;
+  box-sizing: border-box;
 }
 
 .collection-view--loading,
 .collection-view--error {
-  padding: 2rem;
+  padding: clamp(6rem, 11vw, 9rem) 2rem 2rem;
   text-align: center;
 }
 
@@ -16,11 +16,188 @@
   color: #a7c4ff;
 }
 
+/* --- Minimalist (light editorial, matches profile tpl) --- */
+.collection-view--tpl-minimalist {
+  background: #fafafa;
+  color: #030213;
+}
+
+.collection-view--tpl-minimalist.collection-view--error a {
+  color: #2563eb;
+}
+
+.collection-view--tpl-minimalist .collection-view__header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.collection-view--tpl-minimalist .collection-view__back {
+  border: 1px solid rgba(3, 2, 19, 0.18);
+  color: #030213;
+}
+
+.collection-view--tpl-minimalist .collection-view__back:hover {
+  background: rgba(3, 2, 19, 0.06);
+}
+
+.collection-view--tpl-minimalist .collection-view__title {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.collection-view--tpl-minimalist .collection-view__artist {
+  color: rgba(3, 2, 19, 0.5);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.collection-view--tpl-minimalist .collection-view__display-name {
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.collection-view--tpl-minimalist .collection-view__media {
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(3, 2, 19, 0.08);
+}
+
+.collection-view--tpl-minimalist .collection-view__hint {
+  color: rgba(3, 2, 19, 0.45);
+}
+
+/* --- Bold (high contrast, matches profile tpl) --- */
+.collection-view--tpl-bold {
+  background: #0a0a0a;
+  color: #fafafa;
+  --collection-bold-font: "Arial Narrow", "HelveticaNeue-CondensedBold", "Avenir Next Condensed",
+    "Franklin Gothic Medium", "Segoe UI", sans-serif;
+  font-family: var(--collection-bold-font);
+}
+
+.collection-view--tpl-bold .collection-view__header {
+  border-bottom: 2px solid rgba(250, 250, 250, 0.35);
+}
+
+.collection-view--tpl-bold .collection-view__back {
+  border: 2px solid rgba(250, 250, 250, 0.45);
+  color: #fafafa;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  border-radius: 0;
+}
+
+.collection-view--tpl-bold .collection-view__back:hover {
+  background: rgba(250, 250, 250, 0.1);
+}
+
+.collection-view--tpl-bold .collection-view__title {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: clamp(1.1rem, 3.5vw, 1.65rem);
+}
+
+.collection-view--tpl-bold .collection-view__artist {
+  opacity: 0.82;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+.collection-view--tpl-bold .collection-view__display-name {
+  font-weight: 700;
+}
+
+.collection-view--tpl-bold .collection-view__media {
+  border-radius: 0;
+  border: 2px solid rgba(250, 250, 250, 0.2);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
+}
+
+.collection-view--tpl-bold .collection-view__slide-caption {
+  border-top: 1px solid rgba(250, 250, 250, 0.12);
+}
+
+/* --- Artsy (serif / script accents, matches profile tpl) --- */
+.collection-view--tpl-artsy {
+  --artsy-script: "Great Vibes", cursive;
+  --artsy-serif: "Cormorant Garamond", "Libre Baskerville", Georgia, "Times New Roman", serif;
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+.collection-view--tpl-artsy.collection-view--error a {
+  color: #4a6b52;
+}
+
+.collection-view--tpl-artsy .collection-view__header--artsy {
+  margin: 0;
+  padding-top: calc(var(--collection-nav-pad) + clamp(1.25rem, 3.5vh, 2.25rem));
+  padding-right: clamp(1rem, 4vw, 2rem);
+  padding-bottom: clamp(1.25rem, 3vh, 2rem);
+  padding-left: clamp(1rem, 4vw, 2rem);
+  min-height: clamp(160px, 26vh, 280px);
+  display: flex;
+  align-items: flex-end;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+}
+
+.collection-view--tpl-artsy .collection-view__back {
+  border: 1px solid rgba(26, 26, 26, 0.2);
+  color: #1a1a1a;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.collection-view--tpl-artsy .collection-view__back:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.collection-view--tpl-artsy .collection-view__title {
+  font-family: var(--artsy-serif);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+
+.collection-view--tpl-artsy .collection-view__artist {
+  font-family: var(--artsy-serif);
+  font-size: 1rem;
+  color: rgba(26, 26, 26, 0.65);
+}
+
+.collection-view--tpl-artsy .collection-view__display-name {
+  font-family: var(--artsy-script);
+  font-size: 1.65rem;
+  color: #2d3a32;
+}
+
+.collection-view--tpl-artsy .collection-view__artist-sep {
+  font-family: var(--artsy-serif);
+  color: rgba(26, 26, 26, 0.35);
+}
+
+.collection-view--tpl-artsy .collection-view__media {
+  border-radius: 4px;
+  box-shadow: 0 16px 48px rgba(26, 26, 26, 0.12);
+}
+
+.collection-view--tpl-artsy .collection-view__hint {
+  color: rgba(26, 26, 26, 0.45);
+}
+
 .collection-view__header {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
-  padding: 0.75rem 1rem;
+  padding-top: var(--collection-nav-pad);
+  padding-right: clamp(1rem, 4vw, 2rem);
+  padding-bottom: 0.75rem;
+  padding-left: clamp(1rem, 4vw, 2rem);
   flex-shrink: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -55,7 +232,11 @@
 .collection-view__artist {
   margin: 0.25rem 0 0;
   font-size: 0.85rem;
-  opacity: 0.75;
+  opacity: 0.85;
+}
+
+.collection-view__display-name {
+  font-weight: 600;
 }
 
 .collection-view__strip {
@@ -87,17 +268,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1rem;
+  padding: clamp(1rem, 3vh, 2rem) clamp(1rem, 4vw, 2rem) 0.75rem;
   box-sizing: border-box;
 }
 
 .collection-view__media {
   max-width: 100%;
-  max-height: min(78vh, 900px);
+  max-height: min(72vh, 820px);
   width: auto;
   height: auto;
   object-fit: contain;
   border-radius: 6px;
+}
+
+.collection-view--tpl-bold .collection-view__media {
+  max-height: min(68vh, 780px);
 }
 
 .collection-view__placeholder {
@@ -115,6 +300,24 @@
 .collection-view__slide-title {
   font-size: 0.95rem;
   opacity: 0.9;
+}
+
+.collection-view--tpl-artsy .collection-view__slide-title {
+  font-family: var(--artsy-serif);
+  font-size: 1.05rem;
+  font-style: italic;
+}
+
+.collection-view--tpl-bold .collection-view__slide-title {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  opacity: 0.9;
+}
+
+.collection-view--tpl-minimalist .collection-view__slide-title {
+  color: rgba(3, 2, 19, 0.65);
+  letter-spacing: 0.04em;
 }
 
 .collection-view__hint {

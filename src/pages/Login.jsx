@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import AuthLogo from '../components/AuthLogo';
 import './Auth.css';
 
 export default function Login() {
@@ -55,10 +56,7 @@ export default function Login() {
   return (
     <div className="auth-page auth-page-all">
       <div className="auth-card">
-        <div className="auth-logo">
-          <span className="auth-logo-icon">✦</span>
-          <span>Intersect</span>
-        </div>
+        <AuthLogo />
         <h1 className="auth-title">Welcome back</h1>
         <p className="auth-subtitle">Log in with the email you used to sign up</p>
 

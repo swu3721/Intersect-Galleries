@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { fetchPublicCollection } from '../lib/supabaseProfiles';
 import { getPortfolioPublicUrl } from '../lib/storage';
+import { coverColorFromSeed } from '../lib/userDisplay';
+import { normalizePortfolioTemplate } from '../lib/portfolioTemplate';
 import { users } from '../data/mockData';
 import './CollectionView.css';
 
@@ -19,6 +21,10 @@ function enrichMockUserForCollectionView(mock) {
     profile: {
       username: mock.username,
       display_name: mock.name,
+      portfolio_template: mock.portfolio_template || 'minimalist',
+      cover_image_url: mock.cover_image_url ?? null,
+      cover_color: mock.coverColor ?? null,
+      id: mock.id,
     },
     collection: {
       id: `mock-${mock.username}`,
@@ -123,6 +129,25 @@ export default function CollectionView() {
     el.scrollTo({ left: next * w, behavior: 'smooth' });
   }, [pieces.length]);
 
+  const template = normalizePortfolioTemplate(profile?.portfolio_template);
+  const artsyHeaderStyle = useMemo(() => {
+    if (template !== 'artsy' || !profile) return undefined;
+    if (profile.cover_image_url) {
+      const u = JSON.stringify(profile.cover_image_url);
+      return {
+        backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0) 26%, rgba(255,255,255,0.22) 48%, rgba(255,255,255,0.72) 76%, #ffffff 100%), url(${u})`,
+        backgroundSize: 'cover, cover',
+        backgroundPosition: 'center, center',
+        backgroundRepeat: 'no-repeat, no-repeat',
+      };
+    }
+    const raw = profile.cover_color != null ? String(profile.cover_color).trim() : '';
+    const fallback = raw || coverColorFromSeed(profile.id);
+    return {
+      backgroundImage: `linear-gradient(to bottom, ${fallback} 0%, rgba(255,255,255,0.55) 48%, #ffffff 100%)`,
+    };
+  }, [template, profile]);
+
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'ArrowRight') goNeighbor(1);
@@ -160,8 +185,11 @@ export default function CollectionView() {
   }
 
   return (
-    <div className="collection-view">
-      <header className="collection-view__header">
+    <div className={`collection-view collection-view--tpl-${template}`}>
+      <header
+        className={`collection-view__header${template === 'artsy' ? ' collection-view__header--artsy' : ''}`}
+        style={template === 'artsy' ? artsyHeaderStyle : undefined}
+      >
         <button
           type="button"
           className="collection-view__back"
@@ -171,7 +199,20 @@ export default function CollectionView() {
         </button>
         <div className="collection-view__titles">
           <h1 className="collection-view__title">{collectionTitle}</h1>
-          <p className="collection-view__artist">@{profile.username}</p>
+          <p className="collection-view__artist">
+            {profile.display_name ? (
+              <span className="collection-view__display-name">{profile.display_name}</span>
+            ) : null}
+            {profile.display_name ? (
+              <>
+                {' '}
+                <span className="collection-view__artist-sep" aria-hidden="true">
+                  ·
+                </span>{' '}
+              </>
+            ) : null}
+            @{profile.username}
+          </p>
         </div>
       </header>
 

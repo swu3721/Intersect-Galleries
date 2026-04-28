@@ -10,6 +10,7 @@ import {
 import { categories } from '../data/mockData';
 import { ONBOARDING_SAMPLE_USER } from '../data/onboardingPreviewSamples';
 import { PortfolioWorksSection } from '../components/portfolioTemplates/PortfolioLayouts';
+import AuthLogo from '../components/AuthLogo';
 import './Auth.css';
 import './Onboarding.css';
 
@@ -288,10 +289,7 @@ export default function Onboarding() {
       <div
         className={`auth-card onboarding-card${step === 0 ? ' onboarding-card--template-step' : ''}`}
       >
-        <div className="auth-logo">
-          <span className="auth-logo-icon">✦</span>
-          <span>Intersect</span>
-        </div>
+        <AuthLogo />
         <h1 className="auth-title">
           {profile?.onboarding_complete ? 'Update your portfolio' : 'Set up your portfolio'}
         </h1>
@@ -316,15 +314,17 @@ export default function Onboarding() {
                   </button>
                   {template === t.id && (
                     <div className="template-preview-panel" aria-live="polite">
-                      <p className="template-preview-label">Preview — same works, different layout</p>
-                      <div className="template-preview-frame">
-                        <PortfolioWorksSection
-                          template={t.id}
-                          user={ONBOARDING_SAMPLE_USER}
-                          username="preview"
-                          isOwner={false}
-                          previewMode
-                        />
+                      <p className="template-preview-label">Preview — same collections, different layout</p>
+                      <div className={`template-preview-frame template-preview-frame--${t.id}`}>
+                        <div className={`template-preview-shell template-preview-shell--${t.id}`}>
+                          <PortfolioWorksSection
+                            template={t.id}
+                            user={ONBOARDING_SAMPLE_USER}
+                            username="preview"
+                            isOwner={false}
+                            previewMode
+                          />
+                        </div>
                       </div>
                     </div>
                   )}

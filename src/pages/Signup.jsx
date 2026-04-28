@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import AuthLogo from '../components/AuthLogo';
 import './Auth.css';
 
 function mapAuthError(message) {
@@ -85,10 +86,7 @@ export default function Signup() {
     return (
       <div className="auth-page auth-page-all">
         <div className="auth-card">
-          <div className="auth-logo">
-            <span className="auth-logo-icon">✦</span>
-            <span>Intersect</span>
-          </div>
+          <AuthLogo />
           <h1 className="auth-title">Check your email</h1>
           <p className="auth-subtitle">
             We sent a confirmation link to <strong>{form.email.trim()}</strong>. After you verify,
@@ -105,10 +103,7 @@ export default function Signup() {
   return (
     <div className="auth-page auth-page-all">
       <div className="auth-card">
-        <div className="auth-logo">
-          <span className="auth-logo-icon">✦</span>
-          <span>Intersect</span>
-        </div>
+        <AuthLogo />
         <h1 className="auth-title">Create your portfolio</h1>
         <p className="auth-subtitle">Share your work with the world — free forever</p>
 
