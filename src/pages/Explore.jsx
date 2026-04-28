@@ -30,6 +30,16 @@ function artistDiscipline(user) {
   return user.tags?.[0] || user.artworks?.[0]?.category || 'Artist';
 }
 
+function artworkSortTimestamp(art) {
+  const createdTs = Date.parse(art.created_at || art.createdAt || '');
+  if (Number.isFinite(createdTs)) return createdTs;
+
+  if (Number.isFinite(art.year)) {
+    return Date.UTC(art.year, 0, 1);
+  }
+  return 0;
+}
+
 export default function Explore() {
   const [activeTab, setActiveTab] = useState('artists');
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,14 +67,16 @@ export default function Explore() {
   }, [remoteUsers]);
 
   const allArtworks = useMemo(() => {
-    return mergedUsers.flatMap((user) =>
-      user.artworks.map((art) => ({
-        ...art,
-        artistName: user.name,
-        username: user.username,
-        userId: user.id,
-      })),
-    );
+    return mergedUsers
+      .flatMap((user) =>
+        user.artworks.map((art) => ({
+          ...art,
+          artistName: user.name,
+          username: user.username,
+          userId: user.id,
+        })),
+      )
+      .sort((a, b) => artworkSortTimestamp(b) - artworkSortTimestamp(a));
   }, [mergedUsers]);
 
   const filteredUsers = useMemo(() => {
