@@ -11,16 +11,18 @@ import { categories } from '../data/mockData';
 import { ONBOARDING_SAMPLE_USER } from '../data/onboardingPreviewSamples';
 import { PortfolioWorksSection } from '../components/portfolioTemplates/PortfolioLayouts';
 import AuthLogo from '../components/AuthLogo';
+import {
+  ensureWebFriendlyImageOrPassThrough,
+  isAllowedPortfolioMedia,
+} from '../lib/heicForUpload';
 import './Auth.css';
 import './Onboarding.css';
 
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
-function isAllowedMedia(file) {
-  if (file.type.startsWith('image/')) return true;
-  if (file.type === 'video/mp4' || file.type === 'video/webm') return true;
-  return false;
-}
+const FILE_INPUT_ACCEPT_IMAGE_ONLY = 'image/*,.heic,.heif';
+const FILE_INPUT_ACCEPT_IMAGE =
+  `${FILE_INPUT_ACCEPT_IMAGE_ONLY},video/mp4,video/webm`;
 
 function mediaTypeFromFile(file) {
   return file.type.startsWith('video/') ? 'video' : 'image';
@@ -79,7 +81,9 @@ export default function Onboarding() {
 
   const validateFiles = (file) => {
     if (!file) return null;
-    if (!isAllowedMedia(file)) return 'Use an image or MP4/WebM video.';
+    if (!isAllowedPortfolioMedia(file)) {
+      return 'Use an image (JPEG, PNG, HEIC/HEIF, …) or MP4/WebM video.';
+    }
     if (file.size > MAX_FILE_BYTES) return 'Each file must be 50MB or smaller.';
     return null;
   };
@@ -180,22 +184,38 @@ export default function Onboarding() {
       let avatar_url = profile.avatar_url;
       let cover_image_url = profile.cover_image_url;
 
-      if (avatarFile) {
-        const ext = avatarFile.name.split('.').pop()?.replace(/[^a-z0-9]/gi, '') || 'jpg';
+      const avatarUpload = avatarFile
+        ? await ensureWebFriendlyImageOrPassThrough(avatarFile)
+        : null;
+      const coverUpload = coverFile
+        ? await ensureWebFriendlyImageOrPassThrough(coverFile)
+        : null;
+
+      if (avatarUpload && avatarUpload.size > MAX_FILE_BYTES) {
+        throw new Error('Profile photo is too large after conversion (50MB max).');
+      }
+      if (coverUpload && coverUpload.size > MAX_FILE_BYTES) {
+        throw new Error('Cover image is too large after conversion (50MB max).');
+      }
+
+      if (avatarUpload) {
+        const ext =
+          avatarUpload.name.split('.').pop()?.replace(/[^a-z0-9]/gi, '') || 'jpg';
         const path = await uploadToPortfolio(
           userId,
           `avatar/${crypto.randomUUID()}.${ext}`,
-          avatarFile,
+          avatarUpload,
         );
         avatar_url = getPortfolioPublicUrl(path);
       }
 
-      if (coverFile) {
-        const ext = coverFile.name.split('.').pop()?.replace(/[^a-z0-9]/gi, '') || 'jpg';
+      if (coverUpload) {
+        const ext =
+          coverUpload.name.split('.').pop()?.replace(/[^a-z0-9]/gi, '') || 'jpg';
         const path = await uploadToPortfolio(
           userId,
           `cover/${crypto.randomUUID()}.${ext}`,
-          coverFile,
+          coverUpload,
         );
         cover_image_url = getPortfolioPublicUrl(path);
       }
@@ -249,18 +269,24 @@ export default function Onboarding() {
         const rowsToInsert = [];
         let order = 0;
         for (const row of piecesWithFiles) {
-          const safeName = row.file.name.replace(/[^\w.-]+/g, '_');
+          const pieceFile = await ensureWebFriendlyImageOrPassThrough(row.file);
+          if (pieceFile.size > MAX_FILE_BYTES) {
+            throw new Error(
+              `“${row.title.trim() || row.file.name}” is too large after conversion (50MB max).`,
+            );
+          }
+          const safeName = pieceFile.name.replace(/[^\w.-]+/g, '_');
           const storage_path = await uploadToPortfolio(
             userId,
             `items/${crypto.randomUUID()}/${safeName}`,
-            row.file,
+            pieceFile,
           );
           rowsToInsert.push({
             user_id: userId,
             collection_id: collId,
             title: row.title.trim() || 'Untitled',
             category: row.category || 'Mixed Media',
-            media_type: mediaTypeFromFile(row.file),
+            media_type: mediaTypeFromFile(pieceFile),
             storage_path,
             sort_order: order,
           });
@@ -375,7 +401,7 @@ export default function Onboarding() {
               <input
                 id="ob-avatar"
                 type="file"
-                accept="image/*"
+                accept={FILE_INPUT_ACCEPT_IMAGE_ONLY}
                 onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
               />
             </div>
@@ -384,7 +410,7 @@ export default function Onboarding() {
               <input
                 id="ob-cover"
                 type="file"
-                accept="image/*"
+                accept={FILE_INPUT_ACCEPT_IMAGE_ONLY}
                 onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
               />
             </div>
@@ -402,8 +428,9 @@ export default function Onboarding() {
         {step === 2 && (
           <div className="onboarding-step">
             <p className="onboarding-lead">
-              Add one or more collections (optional). Each collection can include several images or
-              videos (MP4/WebM, up to 50MB each).
+              Add one or more collections (optional). Each collection can include several images
+              (including iPhone HEIC) or videos (MP4/WebM, up to 50MB each). HEIC files are converted
+              to JPEG for the web.
             </p>
             <div className="collections-editor">
               {collectionsForm.map((block, blockIndex) => (
@@ -442,7 +469,7 @@ export default function Onboarding() {
                           <label>File</label>
                           <input
                             type="file"
-                            accept="image/*,video/mp4,video/webm"
+                            accept={FILE_INPUT_ACCEPT_IMAGE}
                             onChange={(e) =>
                               updatePiece(block.key, row.key, {
                                 file: e.target.files?.[0] || null,
