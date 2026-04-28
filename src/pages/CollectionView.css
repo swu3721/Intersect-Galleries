@@ -239,6 +239,35 @@
   font-weight: 600;
 }
 
+.collection-view__spotify-wrap {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0.35rem clamp(1rem, 4vw, 1.5rem) 0.65rem;
+  box-sizing: border-box;
+}
+
+.collection-view__spotify {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  border: 0;
+  border-radius: 12px;
+  min-height: 152px;
+}
+
+.collection-view--tpl-minimalist .collection-view__spotify-wrap {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.collection-view--tpl-bold .collection-view__spotify-wrap {
+  max-width: 640px;
+}
+
+.collection-view--tpl-artsy .collection-view__spotify-wrap {
+  max-width: 680px;
+}
+
 .collection-view__strip {
   flex: 1;
   display: flex;

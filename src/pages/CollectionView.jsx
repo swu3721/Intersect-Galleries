@@ -29,6 +29,7 @@ function enrichMockUserForCollectionView(mock) {
     collection: {
       id: `mock-${mock.username}`,
       title: 'Works',
+      spotify_track_id: null,
     },
     items: pieces.map((p, i) => ({
       id: p.id,
@@ -53,6 +54,7 @@ export default function CollectionView() {
   const [error, setError] = useState('');
   const [profile, setProfile] = useState(null);
   const [collectionTitle, setCollectionTitle] = useState('');
+  const [spotifyTrackId, setSpotifyTrackId] = useState(null);
   const [pieces, setPieces] = useState([]);
 
   useEffect(() => {
@@ -67,6 +69,7 @@ export default function CollectionView() {
         if (row) {
           setProfile(row.profile);
           setCollectionTitle(row.collection.title || 'Collection');
+          setSpotifyTrackId(row.collection.spotify_track_id || null);
           const ordered = [...(row.items ?? [])].sort(
             (a, b) => a.sort_order - b.sort_order,
           );
@@ -90,6 +93,7 @@ export default function CollectionView() {
           if (cancelled) return;
           setProfile(bundle.profile);
           setCollectionTitle(bundle.collection.title);
+          setSpotifyTrackId(bundle.collection.spotify_track_id || null);
           const ordered = [...(bundle.items ?? [])].sort(
             (a, b) => a.sort_order - b.sort_order,
           );
@@ -106,6 +110,7 @@ export default function CollectionView() {
 
         if (!cancelled) {
           setProfile(null);
+          setSpotifyTrackId(null);
           setPieces([]);
         }
       } catch (e) {
@@ -215,6 +220,22 @@ export default function CollectionView() {
           </p>
         </div>
       </header>
+
+      {spotifyTrackId ? (
+        <div className="collection-view__spotify-wrap">
+          <iframe
+            title={`Spotify — ${collectionTitle}`}
+            className="collection-view__spotify"
+            src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator`}
+            width="100%"
+            height="152"
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        </div>
+      ) : null}
 
       <div ref={stripRef} className="collection-view__strip" tabIndex={0}>
         {pieces.map((p) => (

@@ -49,6 +49,12 @@ export default function CollectionCard({
       <p className="collection-card__title">{title}</p>
       <p className="collection-card__count">
         {pieceCount === 1 ? '1 piece' : `${pieceCount} pieces`}
+        {collection.spotifyTrackId ? (
+          <span className="collection-card__spotify-note" title="Spotify soundtrack">
+            {' '}
+            · Music
+          </span>
+        ) : null}
       </p>
     </div>
   );

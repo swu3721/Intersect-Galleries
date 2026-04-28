@@ -78,3 +78,8 @@
   font-size: 0.8rem;
   opacity: 0.72;
 }
+
+.collection-card__spotify-note {
+  font-weight: 500;
+  opacity: 0.88;
+}

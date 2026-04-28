@@ -11,6 +11,7 @@ import { categories } from '../data/mockData';
 import { ONBOARDING_SAMPLE_USER } from '../data/onboardingPreviewSamples';
 import { PortfolioWorksSection } from '../components/portfolioTemplates/PortfolioLayouts';
 import AuthLogo from '../components/AuthLogo';
+import SpotifyCollectionMusicField from '../components/SpotifyCollectionMusicField';
 import {
   ensureWebFriendlyImageOrPassThrough,
   isAllowedPortfolioMedia,
@@ -68,6 +69,7 @@ export default function Onboarding() {
   const initialCollection = () => ({
     key: crypto.randomUUID(),
     title: '',
+    spotifyTrackId: null,
     pieces: [initialPiece()],
   });
   const [collectionsForm, setCollectionsForm] = useState([initialCollection()]);
@@ -256,11 +258,18 @@ export default function Onboarding() {
 
         const collId = crypto.randomUUID();
 
+        const spotifyId =
+          typeof block.spotifyTrackId === 'string' &&
+          /^[a-zA-Z0-9]{22}$/.test(block.spotifyTrackId)
+            ? block.spotifyTrackId
+            : null;
+
         const { error: colErr } = await supabase.from('portfolio_collections').insert({
           id: collId,
           user_id: userId,
           title: block.title.trim() || 'Untitled collection',
           audio_storage_path: null,
+          spotify_track_id: spotifyId,
           sort_order: sortBase + colOffset,
         });
         if (colErr) throw colErr;
@@ -430,7 +439,8 @@ export default function Onboarding() {
             <p className="onboarding-lead">
               Add one or more collections (optional). Each collection can include several images
               (including iPhone HEIC) or videos (MP4/WebM, up to 50MB each). HEIC files are converted
-              to JPEG for the web.
+              to JPEG for the web. You can paste an optional Spotify track link for the collection
+              page.
             </p>
             <div className="collections-editor">
               {collectionsForm.map((block, blockIndex) => (
@@ -461,6 +471,14 @@ export default function Onboarding() {
                       placeholder="e.g. Summer studies"
                     />
                   </div>
+                  <SpotifyCollectionMusicField
+                    theme="light"
+                    trackId={block.spotifyTrackId ?? null}
+                    onTrackIdChange={(id) =>
+                      updateCollectionBlock(block.key, { spotifyTrackId: id })
+                    }
+                    idPrefix={`ob-spotify-${block.key}`}
+                  />
                   <p className="onboarding-piece-intro">Pieces in this collection</p>
                   <div className="works-editor">
                     {block.pieces.map((row) => (
