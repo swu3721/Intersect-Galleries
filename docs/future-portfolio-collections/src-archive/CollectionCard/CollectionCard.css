@@ -1,0 +1,92 @@
+.collection-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--collection-card-bg, rgba(255, 255, 255, 0.06));
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.collection-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+}
+
+.collection-card--minimal {
+  box-shadow: none;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.collection-card--minimal:hover {
+  transform: none;
+  opacity: 0.92;
+}
+
+.collection-card__thumb {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: #1a1a22;
+}
+
+.collection-card__thumb--empty {
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.02)
+  );
+}
+
+.collection-card__delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+}
+
+.collection-card__delete:hover {
+  background: rgba(120, 20, 20, 0.85);
+}
+
+.collection-card__audio-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 1;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #f5f5f8;
+}
+
+.collection-card__meta {
+  padding: 0.65rem 0.75rem 0.85rem;
+}
+
+.collection-card--minimal .collection-card__meta {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.collection-card__title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+.collection-card__count {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  opacity: 0.72;
+}

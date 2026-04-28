@@ -1,0 +1,157 @@
+.collection-view {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  background: #0a0a0f;
+  color: #f4f4f8;
+}
+
+.collection-view--loading,
+.collection-view--error {
+  padding: 2rem;
+  text-align: center;
+}
+
+.collection-view--error a {
+  color: #a7c4ff;
+}
+
+.collection-view__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.collection-view__back {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.collection-view__back:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.collection-view__titles {
+  min-width: 0;
+}
+
+.collection-view__title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.collection-view__artist {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.collection-view__strip {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.collection-view__slide {
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.collection-view__media-wrap {
+  flex: 1;
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  box-sizing: border-box;
+}
+
+.collection-view__media {
+  max-width: 100%;
+  max-height: min(78vh, 900px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.collection-view__placeholder {
+  padding: 2rem;
+  opacity: 0.6;
+  text-align: center;
+}
+
+.collection-view__slide-caption {
+  padding: 0.5rem 1rem 1rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.collection-view__slide-title {
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.collection-view__audio-bar {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.collection-view__audio-btn {
+  background: #e8e8f0;
+  color: #111;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.collection-view__audio-btn:hover {
+  background: #fff;
+}
+
+.collection-view__audio-hint {
+  font-size: 0.78rem;
+  opacity: 0.65;
+}
+
+.collection-view__hint {
+  margin: 0;
+  padding: 0.35rem 1rem 0.75rem;
+  font-size: 0.75rem;
+  opacity: 0.5;
+  text-align: center;
+}

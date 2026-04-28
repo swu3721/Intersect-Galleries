@@ -54,6 +54,8 @@ export const ONBOARDING_SAMPLE_USER = {
       coverUrl: ONBOARDING_SAMPLE_ARTWORKS[0]?.mediaUrl ?? null,
       coverColor: '#6b7280',
       pieceCount: ONBOARDING_SAMPLE_ARTWORKS.length,
+      hasAudio: true,
+      audioUrl: null,
       pieces: previewPieces,
     },
   ],

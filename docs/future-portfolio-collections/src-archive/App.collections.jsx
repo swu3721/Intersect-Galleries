@@ -54,8 +54,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
-          <Route path="/profile/:username/collection/:collectionId" element={<CollectionView />} />
           <Route path="/profile/:username" element={<Profile />} />
+          <Route path="/profile/:username/collection/:collectionId" element={<CollectionView />} />
           <Route
             path="/login"
             element={
