@@ -158,6 +158,33 @@
   padding: 0.25rem 0 0.5rem;
 }
 
+.portfolio-works-rail__add-card {
+  flex: 0 0 auto;
+  width: min(76vw, 340px);
+  max-width: 380px;
+  min-height: 220px;
+  border: 1px dashed rgba(3, 2, 19, 0.28);
+  background: rgba(255, 255, 255, 0.62);
+  color: rgba(3, 2, 19, 0.65);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.portfolio-works-rail__add-card:hover {
+  border-color: rgba(3, 2, 19, 0.62);
+  color: #030213;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.portfolio-works-rail__add-plus {
+  font-size: clamp(2.2rem, 6vw, 2.8rem);
+  line-height: 1;
+  font-weight: 300;
+}
+
 .portfolio-works-rail__cell {
   flex: 0 0 auto;
   width: min(76vw, 340px);
@@ -197,6 +224,20 @@
 
 .portfolio-works-rail--bold .portfolio-works-rail__cell {
   width: min(70vw, 320px);
+}
+
+.portfolio-works-rail--bold .portfolio-works-rail__add-card {
+  width: min(70vw, 320px);
+  border-radius: 0;
+  border: 2px dashed rgba(242, 244, 247, 0.35);
+  background: #050507;
+  color: rgba(242, 244, 247, 0.65);
+}
+
+.portfolio-works-rail--bold .portfolio-works-rail__add-card:hover {
+  border-color: rgba(242, 244, 247, 0.72);
+  color: #f2f4f7;
+  background: #090a0f;
 }
 
 .portfolio-works-rail--bold .artwork-thumbnail {
@@ -251,6 +292,14 @@
   width: min(50vw, 308px);
   max-width: none;
   scroll-snap-align: start;
+}
+
+.portfolio-works-rail--artsy .portfolio-works-rail__add-card {
+  width: min(50vw, 308px);
+  max-width: none;
+  border-radius: 2px;
+  border: 1px dashed rgba(10, 10, 10, 0.26);
+  background: rgba(255, 255, 255, 0.82);
 }
 
 .portfolio-works-rail--artsy .portfolio-works-rail__cell:nth-child(4n + 2) {

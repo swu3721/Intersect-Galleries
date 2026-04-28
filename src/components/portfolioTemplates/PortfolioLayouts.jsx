@@ -1,16 +1,9 @@
 import ArtworkCard from '../ArtworkCard/ArtworkCard';
 import CollectionCard from '../CollectionCard/CollectionCard';
 import MasonryGrid from '../MasonryGrid/MasonryGrid';
+import { effectiveCollections } from '../../lib/portfolioDisplay';
 import { normalizePortfolioTemplate } from '../../lib/portfolioTemplate';
 import './PortfolioLayouts.css';
-
-function effectiveCollections(user) {
-  const raw = user?.collections;
-  if (Array.isArray(raw) && raw.length > 0) {
-    return raw.filter((c) => (c.pieces?.length ?? c.pieceCount ?? 0) > 0);
-  }
-  return [];
-}
 
 export function PortfolioWorksSection({
   template,
@@ -23,6 +16,11 @@ export function PortfolioWorksSection({
   onDeleteWork,
   previewMode = false,
   layoutRail = false,
+  /** With `layoutRail`: show only collection cards or only flat artwork cards. */
+  railMode,
+  railCollections,
+  railWorks,
+  onRequestAdd,
 }) {
   const artistName = user.name;
   const artworks = user.artworks ?? [];
@@ -57,8 +55,13 @@ export function PortfolioWorksSection({
   );
 
   if (layoutRail) {
-    if (useCollections) {
-      if (collections.length === 0) {
+    const mode =
+      railMode ?? (useCollections ? 'collections' : 'works');
+    const collectionsForRail = railCollections ?? collections;
+    const worksForRail = railWorks ?? artworks;
+
+    if (mode === 'collections') {
+      if (collectionsForRail.length === 0 && !onRequestAdd) {
         return (
           <div className={`portfolio-works-rail portfolio-works-rail--empty portfolio-works-rail--${tpl}`}>
             {isOwner && empty}
@@ -71,7 +74,17 @@ export function PortfolioWorksSection({
           aria-label="Portfolio collections"
         >
           <div className="portfolio-works-rail__track">
-            {collections.map((col) => (
+            {onRequestAdd && (
+              <button
+                type="button"
+                className="portfolio-works-rail__add-card"
+                onClick={onRequestAdd}
+                aria-label="Add collection or work"
+              >
+                <span className="portfolio-works-rail__add-plus" aria-hidden>+</span>
+              </button>
+            )}
+            {collectionsForRail.map((col) => (
               <div key={col.id} className="portfolio-works-rail__cell">
                 <CollectionCard
                   collection={col}
@@ -87,7 +100,7 @@ export function PortfolioWorksSection({
       );
     }
 
-    if (artworks.length === 0) {
+    if (worksForRail.length === 0 && !onRequestAdd) {
       return (
         <div className={`portfolio-works-rail portfolio-works-rail--empty portfolio-works-rail--${tpl}`}>
           {isOwner && legacyEmpty}
@@ -100,7 +113,17 @@ export function PortfolioWorksSection({
         aria-label="Portfolio works"
       >
         <div className="portfolio-works-rail__track">
-          {artworks.map((art) => (
+          {onRequestAdd && (
+            <button
+              type="button"
+              className="portfolio-works-rail__add-card"
+              onClick={onRequestAdd}
+              aria-label="Add collection or work"
+            >
+              <span className="portfolio-works-rail__add-plus" aria-hidden>+</span>
+            </button>
+          )}
+          {worksForRail.map((art) => (
             <div key={art.id} className="portfolio-works-rail__cell">
               <ArtworkCard
                 artwork={art}

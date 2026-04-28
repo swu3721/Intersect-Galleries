@@ -867,13 +867,14 @@ a.btn-edit {
 
 .profile-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 0;
   margin-bottom: 2rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .profile-tab {
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem clamp(0.65rem, 2vw, 1.1rem);
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
@@ -941,6 +942,119 @@ a.btn-edit {
 
 .about-section a:hover {
   opacity: 0.7;
+}
+
+.profile-add-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(3, 2, 19, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.profile-add-modal {
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 20px 60px rgba(3, 2, 19, 0.25);
+  padding: 1rem;
+}
+
+.profile-add-modal__title {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.profile-add-modal__lead {
+  margin: 0.35rem 0 0.9rem;
+  color: rgba(0, 0, 0, 0.58);
+  font-size: 0.9rem;
+}
+
+.profile-add-modal__type-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.profile-add-modal__type-btn {
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.profile-add-modal__type-btn.active {
+  border-color: #030213;
+  background: #f2f3f5;
+  font-weight: 600;
+}
+
+.profile-add-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.profile-add-modal__form label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.62);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.profile-add-modal__form input,
+.profile-add-modal__form select {
+  padding: 0.62rem 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  font: inherit;
+}
+
+.profile-add-modal__error {
+  margin: 0.75rem 0 0;
+  color: #b42318;
+  font-size: 0.85rem;
+}
+
+.profile-add-modal__actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.profile-add-modal__cancel,
+.profile-add-modal__submit {
+  flex: 1;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  padding: 0.72rem 0.9rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.profile-add-modal__cancel {
+  background: transparent;
+}
+
+.profile-add-modal__submit {
+  background: #030213;
+  border-color: #030213;
+  color: #fff;
+}
+
+.profile-add-modal__submit:disabled {
+  opacity: 0.7;
+  cursor: default;
 }
 
 @media (max-width: 640px) {
