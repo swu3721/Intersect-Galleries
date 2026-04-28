@@ -13,6 +13,10 @@
   border-color: rgba(0, 0, 0, 0.12);
 }
 
+.artwork-card--link {
+  cursor: pointer;
+}
+
 .artwork-thumbnail {
   position: relative;
   overflow: hidden;
@@ -27,11 +31,17 @@
   min-height: 10rem;
 }
 
-.artwork-delete-btn {
+.artwork-actions {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
   z-index: 3;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.artwork-edit-btn,
+.artwork-delete-btn {
   padding: 0.28rem 0.5rem;
   font-size: 0.65rem;
   font-weight: 600;
@@ -44,6 +54,10 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.15s, opacity 0.15s;
+}
+
+.artwork-edit-btn:hover {
+  background: rgba(30, 60, 120, 0.92);
 }
 
 .artwork-delete-btn:hover {

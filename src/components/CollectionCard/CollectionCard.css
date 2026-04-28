@@ -39,11 +39,17 @@
   );
 }
 
-.collection-card__delete {
+.collection-card__actions {
   position: absolute;
   top: 8px;
   right: 8px;
   z-index: 2;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.collection-card__edit,
+.collection-card__delete {
   font-size: 0.75rem;
   padding: 0.35rem 0.55rem;
   border-radius: 6px;
@@ -51,6 +57,10 @@
   cursor: pointer;
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
+}
+
+.collection-card__edit:hover {
+  background: rgba(30, 60, 120, 0.9);
 }
 
 .collection-card__delete:hover {

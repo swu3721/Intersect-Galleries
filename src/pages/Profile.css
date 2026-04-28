@@ -1020,6 +1020,56 @@ a.btn-edit {
   font: inherit;
 }
 
+.profile-add-modal__hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.52);
+}
+
+.profile-add-modal__piece-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.profile-add-modal__piece-row {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: #fafafa;
+}
+
+.profile-add-modal__piece-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-add-modal__piece-remove {
+  border: none;
+  background: transparent;
+  color: #9f1239;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.profile-add-modal__piece-remove:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.profile-add-modal__piece-add {
+  border: 1px dashed rgba(0, 0, 0, 0.25);
+  background: transparent;
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  cursor: pointer;
+  font: inherit;
+}
+
 .profile-add-modal__error {
   margin: 0.75rem 0 0;
   color: #b42318;

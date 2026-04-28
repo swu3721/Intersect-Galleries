@@ -155,13 +155,13 @@ export default function CollectionView() {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'ArrowRight') goNeighbor(1);
-      if (e.key === 'ArrowLeft') goNeighbor(-1);
+      if (pieces.length > 1 && e.key === 'ArrowRight') goNeighbor(1);
+      if (pieces.length > 1 && e.key === 'ArrowLeft') goNeighbor(-1);
       if (e.key === 'Escape') navigate(`/profile/${username}`);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [goNeighbor, navigate, username]);
+  }, [goNeighbor, navigate, username, pieces.length]);
 
   if (loading) {
     return (
@@ -270,7 +270,9 @@ export default function CollectionView() {
         ))}
       </div>
 
-      <p className="collection-view__hint">Swipe horizontally · ← → keys</p>
+      {pieces.length > 1 && (
+        <p className="collection-view__hint">Swipe horizontally · ← → keys</p>
+      )}
     </div>
   );
 }

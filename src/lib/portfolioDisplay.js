@@ -17,7 +17,16 @@ export function splitPortfolioForRails(user) {
   const railCollections = cols.filter((c) => (c.pieces?.length ?? c.pieceCount ?? 0) > 1);
   const railWorks = cols
     .filter((c) => (c.pieces?.length ?? c.pieceCount ?? 0) === 1)
-    .map((c) => c.pieces?.[0])
+    .map((c) => {
+      const p = c.pieces?.[0];
+      if (!p) return null;
+      return {
+        ...p,
+        collectionId: c.id,
+        collectionTitle: c.title,
+        collectionSpotifyTrackId: c.spotifyTrackId || null,
+      };
+    })
     .filter(Boolean);
   return { railCollections, railWorks };
 }

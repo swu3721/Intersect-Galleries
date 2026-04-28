@@ -21,6 +21,8 @@ export function PortfolioWorksSection({
   railCollections,
   railWorks,
   onRequestAdd,
+  onEditCollection,
+  onEditWork,
 }) {
   const artistName = user.name;
   const artworks = user.artworks ?? [];
@@ -91,6 +93,7 @@ export function PortfolioWorksSection({
                   username={username}
                   minimal={tpl === 'minimalist' || tpl === 'artsy'}
                   onDelete={delCol(col)}
+                  onEdit={onEditCollection ? () => onEditCollection(col) : undefined}
                   previewMode={previewMode}
                 />
               </div>
@@ -131,7 +134,11 @@ export function PortfolioWorksSection({
                 username={username}
                 minimal={tpl === 'minimalist' || tpl === 'artsy'}
                 onDelete={delArt(art)}
+                onEdit={onEditWork ? () => onEditWork(art) : undefined}
                 hideProfileLink={previewMode}
+                collectionLinkTo={
+                  art.collectionId ? `/profile/${username}/collection/${art.collectionId}` : undefined
+                }
               />
             </div>
           ))}

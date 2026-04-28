@@ -37,6 +37,20 @@ function mediaTypeFromFile(file) {
   return file.type.startsWith('video/') ? 'video' : 'image';
 }
 
+function createCollectionPieceDraft(category = 'Mixed Media') {
+  return {
+    key: crypto.randomUUID(),
+    existingItemId: null,
+    existingStoragePath: null,
+    existingMediaType: null,
+    existingMediaUrl: null,
+    sortOrder: 0,
+    title: '',
+    category,
+    file: null,
+  };
+}
+
 async function uploadToPortfolio(userId, relativePath, file) {
   const path = `${userId}/${relativePath}`;
   const { error } = await supabase.storage.from('portfolio').upload(path, file, {
@@ -115,13 +129,16 @@ export default function Profile() {
   const [addBusy, setAddBusy] = useState(false);
   const [addError, setAddError] = useState('');
   const [newCollectionTitle, setNewCollectionTitle] = useState('');
-  const [newCollectionPieceTitle, setNewCollectionPieceTitle] = useState('');
-  const [newCollectionPieceCategory, setNewCollectionPieceCategory] = useState('Mixed Media');
-  const [newCollectionPieceFile, setNewCollectionPieceFile] = useState(null);
+  const [collectionPiecesDraft, setCollectionPiecesDraft] = useState([
+    createCollectionPieceDraft('Mixed Media'),
+  ]);
   const [newCollectionSpotifyTrackId, setNewCollectionSpotifyTrackId] = useState(null);
+  const [editingCollection, setEditingCollection] = useState(null);
+  const [editingWork, setEditingWork] = useState(null);
   const [newWorkTitle, setNewWorkTitle] = useState('');
   const [newWorkCategory, setNewWorkCategory] = useState('Mixed Media');
   const [newWorkFile, setNewWorkFile] = useState(null);
+  const [newWorkSpotifyTrackId, setNewWorkSpotifyTrackId] = useState(null);
 
   useEffect(() => {
     setActiveTab('collections');
@@ -204,17 +221,18 @@ export default function Profile() {
   );
 
   const resetAddState = useCallback(() => {
+    setEditingCollection(null);
+    setEditingWork(null);
     setAddType('');
     setAddError('');
     setAddBusy(false);
     setNewCollectionTitle('');
-    setNewCollectionPieceTitle('');
-    setNewCollectionPieceCategory(categoryChoices[0] || 'Mixed Media');
-    setNewCollectionPieceFile(null);
+    setCollectionPiecesDraft([createCollectionPieceDraft(categoryChoices[0] || 'Mixed Media')]);
     setNewCollectionSpotifyTrackId(null);
     setNewWorkTitle('');
     setNewWorkCategory(categoryChoices[0] || 'Mixed Media');
     setNewWorkFile(null);
+    setNewWorkSpotifyTrackId(null);
   }, [categoryChoices]);
 
   const openAddModal = useCallback(() => {
@@ -222,6 +240,56 @@ export default function Profile() {
     resetAddState();
     setAddOpen(true);
   }, [isOwner, resetAddState]);
+
+  const openEditCollectionModal = useCallback((collection) => {
+    if (!isOwner || !collection) return;
+    const drafts = (collection.pieces ?? []).map((p, idx) => ({
+      key: crypto.randomUUID(),
+      existingItemId: p.id,
+      existingStoragePath: p.storage_path || null,
+      existingMediaType: p.media_type || 'image',
+      existingMediaUrl: p.mediaUrl || null,
+      sortOrder: idx,
+      title: p.title || '',
+      category: p.category || (categoryChoices[0] || 'Mixed Media'),
+      file: null,
+    }));
+    setEditingCollection({
+      id: collection.id,
+    });
+    setAddType('collection');
+    setAddError('');
+    setAddBusy(false);
+    setNewCollectionTitle(collection.title || '');
+    setNewCollectionSpotifyTrackId(collection.spotifyTrackId || null);
+    setCollectionPiecesDraft(
+      drafts.length > 0
+        ? drafts
+        : [createCollectionPieceDraft(categoryChoices[0] || 'Mixed Media')],
+    );
+    setNewWorkTitle('');
+    setNewWorkCategory(categoryChoices[0] || 'Mixed Media');
+    setNewWorkFile(null);
+    setNewWorkSpotifyTrackId(collection.spotifyTrackId || null);
+    setAddOpen(true);
+  }, [isOwner, categoryChoices]);
+
+  const openEditWorkModal = useCallback((work) => {
+    if (!isOwner || !work) return;
+    setEditingWork({
+      itemId: work.id,
+      collectionId: work.collectionId || null,
+    });
+    setEditingCollection(null);
+    setAddType('work');
+    setAddError('');
+    setAddBusy(false);
+    setNewWorkTitle(work.title || '');
+    setNewWorkCategory(work.category || (categoryChoices[0] || 'Mixed Media'));
+    setNewWorkSpotifyTrackId(work.collectionSpotifyTrackId || null);
+    setNewWorkFile(null);
+    setAddOpen(true);
+  }, [isOwner, categoryChoices]);
 
   const closeAddModal = useCallback(() => {
     setAddOpen(false);
@@ -243,6 +311,37 @@ export default function Profile() {
     );
     setFollowing(row.stats?.viewerFollows ?? false);
   }, [username, session?.user?.id]);
+
+  const updateCollectionPieceDraft = useCallback((key, patch) => {
+    setCollectionPiecesDraft((rows) =>
+      rows.map((row) => (row.key === key ? { ...row, ...patch } : row)),
+    );
+  }, []);
+
+  const addCollectionPieceDraft = useCallback(() => {
+    setCollectionPiecesDraft((rows) => [
+      ...rows,
+      createCollectionPieceDraft(categoryChoices[0] || 'Mixed Media'),
+    ]);
+  }, [categoryChoices]);
+
+  const removeCollectionPieceDraft = useCallback((key) => {
+    setCollectionPiecesDraft((rows) => {
+      if (rows.length <= 1) return rows;
+      return rows.filter((row) => row.key !== key);
+    });
+  }, []);
+
+  const addMultipleCollectionFiles = useCallback((files) => {
+    const picked = Array.from(files ?? []);
+    if (picked.length === 0) return;
+    const nextRows = picked.map((file) => ({
+      ...createCollectionPieceDraft(categoryChoices[0] || 'Mixed Media'),
+      title: file.name.replace(/\.[^.]+$/, ''),
+      file,
+    }));
+    setCollectionPiecesDraft((rows) => [...rows, ...nextRows]);
+  }, [categoryChoices]);
 
   const handleFollowToggle = useCallback(async () => {
     if (!user || user._source !== 'supabase') return;
@@ -382,48 +481,128 @@ export default function Profile() {
       return;
     }
 
-    const file = addType === 'collection' ? newCollectionPieceFile : newWorkFile;
-    if (!file) {
-      setAddError('Please choose a media file.');
-      return;
-    }
-    if (!isAllowedMedia(file)) {
-      setAddError('Use an image or MP4/WebM video.');
-      return;
-    }
-    if (file.size > MAX_FILE_BYTES) {
-      setAddError('Each file must be 50MB or smaller.');
-      return;
+    if (addType === 'collection') {
+      const hasAnyUpload = collectionPiecesDraft.some((p) => !!p.file);
+      const hasExistingRows = editingCollection
+        ? collectionPiecesDraft.some((p) => !!p.existingItemId)
+        : false;
+      if (!hasAnyUpload && !hasExistingRows) {
+        setAddError('Add at least one media file.');
+        return;
+      }
+      for (const p of collectionPiecesDraft) {
+        if (!p.file) continue;
+        if (!isAllowedMedia(p.file)) {
+          setAddError('Use images or MP4/WebM videos only.');
+          return;
+        }
+        if (p.file.size > MAX_FILE_BYTES) {
+          setAddError('Each file must be 50MB or smaller.');
+          return;
+        }
+      }
+    } else {
+      const file = newWorkFile;
+      if (!file && !editingCollection) {
+        setAddError('Please choose a media file.');
+        return;
+      }
+      if (file && !isAllowedMedia(file)) {
+        setAddError('Use an image or MP4/WebM video.');
+        return;
+      }
+      if (file && file.size > MAX_FILE_BYTES) {
+        setAddError('Each file must be 50MB or smaller.');
+        return;
+      }
     }
 
     setAddBusy(true);
     setAddError('');
     try {
       const userId = session.user.id;
-      const { data: sortRows } = await supabase
-        .from('portfolio_collections')
-        .select('sort_order')
-        .eq('user_id', userId);
-      const nextSort =
-        sortRows?.length > 0
-          ? Math.max(...sortRows.map((r) => Number(r.sort_order) || 0)) + 1
-          : 0;
-
       let collectionTitle = 'Untitled collection';
-      let itemTitle = 'Untitled';
-      let itemCategory = categoryChoices[0] || 'Mixed Media';
-
       if (addType === 'collection') {
         collectionTitle = newCollectionTitle.trim() || 'Untitled collection';
-        itemTitle = newCollectionPieceTitle.trim() || 'Untitled';
-        itemCategory = newCollectionPieceCategory || itemCategory;
       } else {
+        const itemTitle = newWorkTitle.trim() || 'Untitled';
+        const itemCategory = newWorkCategory || (categoryChoices[0] || 'Mixed Media');
         collectionTitle = 'Single works';
-        itemTitle = newWorkTitle.trim() || 'Untitled';
-        itemCategory = newWorkCategory || itemCategory;
+        const file = newWorkFile;
+        const workSpotifyTrackId =
+          typeof newWorkSpotifyTrackId === 'string' &&
+          /^[a-zA-Z0-9]{22}$/.test(newWorkSpotifyTrackId)
+            ? newWorkSpotifyTrackId
+            : null;
+        if (editingWork?.itemId && editingWork.collectionId) {
+          const { error: updColErr } = await supabase
+            .from('portfolio_collections')
+            .update({ spotify_track_id: workSpotifyTrackId })
+            .eq('id', editingWork.collectionId)
+            .eq('user_id', userId);
+          if (updColErr) throw updColErr;
+
+          const patch = {
+            title: itemTitle,
+            category: itemCategory,
+          };
+          if (file) {
+            const safeName = file.name.replace(/[^\w.-]+/g, '_');
+            const storage_path = await uploadToPortfolio(
+              userId,
+              `items/${crypto.randomUUID()}/${safeName}`,
+              file,
+            );
+            patch.storage_path = storage_path;
+            patch.media_type = mediaTypeFromFile(file);
+          }
+          const { error: updItemErr } = await supabase
+            .from('portfolio_items')
+            .update(patch)
+            .eq('id', editingWork.itemId)
+            .eq('user_id', userId);
+          if (updItemErr) throw updItemErr;
+        } else {
+        const { data: sortRows } = await supabase
+          .from('portfolio_collections')
+          .select('sort_order')
+          .eq('user_id', userId);
+        const nextSort =
+          sortRows?.length > 0
+            ? Math.max(...sortRows.map((r) => Number(r.sort_order) || 0)) + 1
+            : 0;
+
+        const collectionId = crypto.randomUUID();
+        const { error: colErr } = await supabase.from('portfolio_collections').insert({
+          id: collectionId,
+          user_id: userId,
+          title: collectionTitle,
+          audio_storage_path: null,
+          spotify_track_id: workSpotifyTrackId,
+          sort_order: nextSort,
+        });
+        if (colErr) throw colErr;
+
+        const safeName = file.name.replace(/[^\w.-]+/g, '_');
+        const storage_path = await uploadToPortfolio(
+          userId,
+          `items/${crypto.randomUUID()}/${safeName}`,
+          file,
+        );
+
+        const { error: itemErr } = await supabase.from('portfolio_items').insert({
+          user_id: userId,
+          collection_id: collectionId,
+          title: itemTitle,
+          category: itemCategory,
+          media_type: mediaTypeFromFile(file),
+          storage_path,
+          sort_order: 0,
+        });
+        if (itemErr) throw itemErr;
+        }
       }
 
-      const collectionId = crypto.randomUUID();
       const spotifyTrackId =
         addType === 'collection' &&
         typeof newCollectionSpotifyTrackId === 'string' &&
@@ -431,33 +610,103 @@ export default function Profile() {
           ? newCollectionSpotifyTrackId
           : null;
 
-      const { error: colErr } = await supabase.from('portfolio_collections').insert({
-        id: collectionId,
-        user_id: userId,
-        title: collectionTitle,
-        audio_storage_path: null,
-        spotify_track_id: spotifyTrackId,
-        sort_order: nextSort,
-      });
-      if (colErr) throw colErr;
+      if (addType === 'collection' && editingCollection) {
+        const { error: updColErr } = await supabase
+          .from('portfolio_collections')
+          .update({
+            title: collectionTitle,
+            spotify_track_id: spotifyTrackId,
+          })
+          .eq('id', editingCollection.id)
+          .eq('user_id', userId);
+        if (updColErr) throw updColErr;
+        let nextSort = collectionPiecesDraft.length;
+        for (const p of collectionPiecesDraft) {
+          if (p.existingItemId) {
+            const itemPatch = {
+              title: p.title.trim() || 'Untitled',
+              category: p.category || (categoryChoices[0] || 'Mixed Media'),
+              sort_order: p.sortOrder ?? 0,
+            };
+            if (p.file) {
+              const safeName = p.file.name.replace(/[^\w.-]+/g, '_');
+              const storage_path = await uploadToPortfolio(
+                userId,
+                `items/${crypto.randomUUID()}/${safeName}`,
+                p.file,
+              );
+              itemPatch.storage_path = storage_path;
+              itemPatch.media_type = mediaTypeFromFile(p.file);
+            }
+            const { error: updItemErr } = await supabase
+              .from('portfolio_items')
+              .update(itemPatch)
+              .eq('id', p.existingItemId)
+              .eq('user_id', userId);
+            if (updItemErr) throw updItemErr;
+            continue;
+          }
+          if (!p.file) continue;
+          const safeName = p.file.name.replace(/[^\w.-]+/g, '_');
+          const storage_path = await uploadToPortfolio(
+            userId,
+            `items/${crypto.randomUUID()}/${safeName}`,
+            p.file,
+          );
+          const { error: insItemErr } = await supabase.from('portfolio_items').insert({
+            user_id: userId,
+            collection_id: editingCollection.id,
+            title: p.title.trim() || 'Untitled',
+            category: p.category || (categoryChoices[0] || 'Mixed Media'),
+            media_type: mediaTypeFromFile(p.file),
+            storage_path,
+            sort_order: nextSort,
+          });
+          if (insItemErr) throw insItemErr;
+          nextSort += 1;
+        }
+      } else if (addType === 'collection') {
+        const { data: sortRows } = await supabase
+          .from('portfolio_collections')
+          .select('sort_order')
+          .eq('user_id', userId);
+        const nextSort =
+          sortRows?.length > 0
+            ? Math.max(...sortRows.map((r) => Number(r.sort_order) || 0)) + 1
+            : 0;
 
-      const safeName = file.name.replace(/[^\w.-]+/g, '_');
-      const storage_path = await uploadToPortfolio(
-        userId,
-        `items/${crypto.randomUUID()}/${safeName}`,
-        file,
-      );
-
-      const { error: itemErr } = await supabase.from('portfolio_items').insert({
-        user_id: userId,
-        collection_id: collectionId,
-        title: itemTitle,
-        category: itemCategory,
-        media_type: mediaTypeFromFile(file),
-        storage_path,
-        sort_order: 0,
-      });
-      if (itemErr) throw itemErr;
+        const collectionId = crypto.randomUUID();
+        const { error: colErr } = await supabase.from('portfolio_collections').insert({
+          id: collectionId,
+          user_id: userId,
+          title: collectionTitle,
+          audio_storage_path: null,
+          spotify_track_id: spotifyTrackId,
+          sort_order: nextSort,
+        });
+        if (colErr) throw colErr;
+        let sortOrder = 0;
+        for (const p of collectionPiecesDraft) {
+          if (!p.file) continue;
+          const safeName = p.file.name.replace(/[^\w.-]+/g, '_');
+          const storage_path = await uploadToPortfolio(
+            userId,
+            `items/${crypto.randomUUID()}/${safeName}`,
+            p.file,
+          );
+          const { error: itemErr } = await supabase.from('portfolio_items').insert({
+            user_id: userId,
+            collection_id: collectionId,
+            title: p.title.trim() || 'Untitled',
+            category: p.category || (categoryChoices[0] || 'Mixed Media'),
+            media_type: mediaTypeFromFile(p.file),
+            storage_path,
+            sort_order: sortOrder,
+          });
+          if (itemErr) throw itemErr;
+          sortOrder += 1;
+        }
+      }
 
       await reloadProfileFromDb();
       setActiveTab(addType === 'collection' ? 'collections' : 'works');
@@ -473,15 +722,16 @@ export default function Profile() {
     user?.username,
     user?._source,
     addType,
-    newCollectionPieceFile,
+    editingCollection,
+    editingWork,
+    collectionPiecesDraft,
     newWorkFile,
     categoryChoices,
     newCollectionTitle,
-    newCollectionPieceTitle,
-    newCollectionPieceCategory,
     newCollectionSpotifyTrackId,
     newWorkTitle,
     newWorkCategory,
+    newWorkSpotifyTrackId,
     reloadProfileFromDb,
     closeAddModal,
     navigate,
@@ -799,6 +1049,7 @@ export default function Profile() {
               onDeleteCollection={onDeleteCollection}
               onDeleteWork={onDeleteWork}
               onRequestAdd={isOwner ? openAddModal : undefined}
+              onEditCollection={isOwner ? openEditCollectionModal : undefined}
             />
           )}
 
@@ -815,6 +1066,7 @@ export default function Profile() {
               onDeleteCollection={onDeleteCollection}
               onDeleteWork={onDeleteWork}
               onRequestAdd={isOwner ? openAddModal : undefined}
+              onEditWork={isOwner ? openEditWorkModal : undefined}
             />
           )}
 
@@ -860,24 +1112,34 @@ export default function Profile() {
             aria-label="Add to portfolio"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="profile-add-modal__title">Add to portfolio</h3>
-            <p className="profile-add-modal__lead">Choose what to add from your profile directly.</p>
-            <div className="profile-add-modal__type-row">
-              <button
-                type="button"
-                className={`profile-add-modal__type-btn${addType === 'collection' ? ' active' : ''}`}
-                onClick={() => setAddType('collection')}
-              >
-                Collection
-              </button>
-              <button
-                type="button"
-                className={`profile-add-modal__type-btn${addType === 'work' ? ' active' : ''}`}
-                onClick={() => setAddType('work')}
-              >
-                Single work
-              </button>
-            </div>
+            <h3 className="profile-add-modal__title">
+              {editingCollection ? 'Edit collection' : editingWork ? 'Edit work' : 'Add to portfolio'}
+            </h3>
+            <p className="profile-add-modal__lead">
+              {editingCollection
+                ? 'Update this collection without going through onboarding.'
+                : editingWork
+                  ? 'Update this single work directly from your profile.'
+                : 'Choose what to add from your profile directly.'}
+            </p>
+            {!editingCollection && !editingWork && (
+              <div className="profile-add-modal__type-row">
+                <button
+                  type="button"
+                  className={`profile-add-modal__type-btn${addType === 'collection' ? ' active' : ''}`}
+                  onClick={() => setAddType('collection')}
+                >
+                  Collection
+                </button>
+                <button
+                  type="button"
+                  className={`profile-add-modal__type-btn${addType === 'work' ? ' active' : ''}`}
+                  onClick={() => setAddType('work')}
+                >
+                  Single work
+                </button>
+              </div>
+            )}
 
             {addType === 'collection' && (
               <div className="profile-add-modal__form">
@@ -895,31 +1157,74 @@ export default function Profile() {
                   onTrackIdChange={setNewCollectionSpotifyTrackId}
                   idPrefix="add-collection-spotify"
                 />
-                <label htmlFor="add-collection-piece-title">First piece title</label>
+                <label htmlFor="add-collection-multi-file">Add multiple files at once</label>
                 <input
-                  id="add-collection-piece-title"
-                  type="text"
-                  value={newCollectionPieceTitle}
-                  onChange={(e) => setNewCollectionPieceTitle(e.target.value)}
-                  placeholder="Untitled"
-                />
-                <label htmlFor="add-collection-piece-category">Category</label>
-                <select
-                  id="add-collection-piece-category"
-                  value={newCollectionPieceCategory}
-                  onChange={(e) => setNewCollectionPieceCategory(e.target.value)}
-                >
-                  {categoryChoices.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-                <label htmlFor="add-collection-piece-file">Media file</label>
-                <input
-                  id="add-collection-piece-file"
+                  id="add-collection-multi-file"
                   type="file"
+                  multiple
                   accept="image/*,video/mp4,video/webm"
-                  onChange={(e) => setNewCollectionPieceFile(e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    addMultipleCollectionFiles(e.target.files);
+                    e.target.value = '';
+                  }}
                 />
+                <div className="profile-add-modal__piece-list">
+                  {collectionPiecesDraft.map((piece, idx) => (
+                    <div key={piece.key} className="profile-add-modal__piece-row">
+                      <div className="profile-add-modal__piece-row-head">
+                        <strong>Piece {idx + 1}</strong>
+                        <button
+                          type="button"
+                          className="profile-add-modal__piece-remove"
+                          onClick={() => removeCollectionPieceDraft(piece.key)}
+                          disabled={collectionPiecesDraft.length <= 1}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      {piece.existingMediaUrl && (
+                        <p className="profile-add-modal__hint">Existing media attached.</p>
+                      )}
+                      <label htmlFor={`collection-piece-title-${piece.key}`}>Title</label>
+                      <input
+                        id={`collection-piece-title-${piece.key}`}
+                        type="text"
+                        value={piece.title}
+                        onChange={(e) =>
+                          updateCollectionPieceDraft(piece.key, { title: e.target.value })}
+                        placeholder="Untitled"
+                      />
+                      <label htmlFor={`collection-piece-category-${piece.key}`}>Category</label>
+                      <select
+                        id={`collection-piece-category-${piece.key}`}
+                        value={piece.category}
+                        onChange={(e) =>
+                          updateCollectionPieceDraft(piece.key, { category: e.target.value })}
+                      >
+                        {categoryChoices.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      <label htmlFor={`collection-piece-file-${piece.key}`}>
+                        {piece.existingItemId ? 'Replace media (optional)' : 'Media file'}
+                      </label>
+                      <input
+                        id={`collection-piece-file-${piece.key}`}
+                        type="file"
+                        accept="image/*,video/mp4,video/webm"
+                        onChange={(e) =>
+                          updateCollectionPieceDraft(piece.key, { file: e.target.files?.[0] || null })}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="profile-add-modal__piece-add"
+                  onClick={addCollectionPieceDraft}
+                >
+                  + Add another piece
+                </button>
               </div>
             )}
 
@@ -943,6 +1248,12 @@ export default function Profile() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
+                <SpotifyCollectionMusicField
+                  theme="light"
+                  trackId={newWorkSpotifyTrackId}
+                  onTrackIdChange={setNewWorkSpotifyTrackId}
+                  idPrefix="add-work-spotify"
+                />
                 <label htmlFor="add-work-file">Media file</label>
                 <input
                   id="add-work-file"
@@ -950,6 +1261,11 @@ export default function Profile() {
                   accept="image/*,video/mp4,video/webm"
                   onChange={(e) => setNewWorkFile(e.target.files?.[0] || null)}
                 />
+                {editingWork && (
+                  <p className="profile-add-modal__hint">
+                    Leave media empty to keep the current file.
+                  </p>
+                )}
               </div>
             )}
 
@@ -967,7 +1283,7 @@ export default function Profile() {
                 onClick={() => void handleAddPortfolioEntry()}
                 disabled={addBusy}
               >
-                {addBusy ? 'Saving…' : 'Save'}
+                {addBusy ? 'Saving…' : (editingCollection || editingWork) ? 'Save changes' : 'Save'}
               </button>
             </div>
           </div>

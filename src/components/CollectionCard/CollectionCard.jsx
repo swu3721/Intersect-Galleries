@@ -6,6 +6,7 @@ export default function CollectionCard({
   username,
   minimal = false,
   onDelete,
+  onEdit,
   /** Onboarding previews: no navigation */
   previewMode = false,
 }) {
@@ -27,19 +28,37 @@ export default function CollectionCard({
       }}
       aria-hidden={!coverUrl}
     >
-      {onDelete && (
-        <button
-          type="button"
-          className="collection-card__delete"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onDelete();
-          }}
-          aria-label={`Remove collection ${title}`}
-        >
-          Remove
-        </button>
+      {(onEdit || onDelete) && (
+        <div className="collection-card__actions">
+          {onEdit && (
+            <button
+              type="button"
+              className="collection-card__edit"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit();
+              }}
+              aria-label={`Edit collection ${title}`}
+            >
+              Edit
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              className="collection-card__delete"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete();
+              }}
+              aria-label={`Remove collection ${title}`}
+            >
+              Remove
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

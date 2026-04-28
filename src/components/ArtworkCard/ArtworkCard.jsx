@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './ArtworkCard.css';
 
 export default function ArtworkCard({
@@ -11,9 +11,14 @@ export default function ArtworkCard({
   minimal = false,
   /** Owner: optional callback to remove this work from portfolio */
   onDelete,
+  /** Owner: optional callback to edit this work */
+  onEdit,
   /** Hide @username profile link (e.g. template previews) */
   hideProfileLink = false,
+  /** Optional collection route target for opening fullscreen view */
+  collectionLinkTo,
 }) {
+  const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(artwork.likes || 0);
 
@@ -31,28 +36,61 @@ export default function ArtworkCard({
     setLiked(!liked);
   };
 
+  const handleOpenCollection = () => {
+    if (!collectionLinkTo) return;
+    navigate(collectionLinkTo);
+  };
+
   return (
     <div
-      className={`artwork-card${mini ? ' artwork-card--mini' : ''}${minimal ? ' artwork-card--minimal' : ''}`}
+      className={`artwork-card${mini ? ' artwork-card--mini' : ''}${minimal ? ' artwork-card--minimal' : ''}${collectionLinkTo ? ' artwork-card--link' : ''}`}
+      onClick={handleOpenCollection}
+      onKeyDown={(e) => {
+        if (!collectionLinkTo) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleOpenCollection();
+        }
+      }}
+      role={collectionLinkTo ? 'button' : undefined}
+      tabIndex={collectionLinkTo ? 0 : undefined}
     >
       <div
         className={`artwork-thumbnail${!hasMedia ? ' artwork-thumbnail--empty' : ''}`}
         style={{ background: artwork.color }}
         aria-label={artwork.title}
       >
-        {onDelete && (
-          <button
-            type="button"
-            className="artwork-delete-btn"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete();
-            }}
-            aria-label={`Remove ${artwork.title} from portfolio`}
-          >
-            Remove
-          </button>
+        {(onEdit || onDelete) && (
+          <div className="artwork-actions">
+            {onEdit && (
+              <button
+                type="button"
+                className="artwork-edit-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onEdit();
+                }}
+                aria-label={`Edit ${artwork.title}`}
+              >
+                Edit
+              </button>
+            )}
+            {onDelete && (
+              <button
+                type="button"
+                className="artwork-delete-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                aria-label={`Remove ${artwork.title} from portfolio`}
+              >
+                Remove
+              </button>
+            )}
+          </div>
         )}
         {hasMedia && isVideo && (
           <video
