@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchSpotifyOEmbed, parseSpotifyTrackId } from '../lib/spotifyTrack';
+import { searchSpotifyTracks } from '../lib/spotifySearch';
 import './SpotifyCollectionMusicField.css';
+
+const SEARCH_DEBOUNCE_MS = 400;
 
 /**
  * @param {{ trackId: string | null, onTrackIdChange: (id: string | null) => void, idPrefix?: string, className?: string, theme?: 'light' | 'dark' }} props
@@ -15,6 +18,13 @@ export default function SpotifyCollectionMusicField({
   const [paste, setPaste] = useState('');
   const [localError, setLocalError] = useState('');
   const [oembed, setOembed] = useState(null);
+
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const searchDebounceRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,6 +41,46 @@ export default function SpotifyCollectionMusicField({
     };
   }, [trackId]);
 
+  const onSearchInputChange = useCallback((value) => {
+    setSearchInput(value);
+    window.clearTimeout(searchDebounceRef.current);
+    const t = value.trim();
+    if (t.length < 2) {
+      setDebouncedQuery('');
+      setSearchResults([]);
+      setSearchLoading(false);
+      setSearchError('');
+      return;
+    }
+    setSearchLoading(true);
+    setSearchError('');
+    searchDebounceRef.current = window.setTimeout(() => {
+      setDebouncedQuery(t);
+    }, SEARCH_DEBOUNCE_MS);
+  }, []);
+
+  useEffect(() => {
+    const q = debouncedQuery.trim();
+    if (q.length < 2) return undefined;
+
+    let cancelled = false;
+    (async () => {
+      const { tracks, error } = await searchSpotifyTracks(q);
+      if (cancelled) return;
+      setSearchLoading(false);
+      if (error) {
+        setSearchResults([]);
+        setSearchError(error);
+        return;
+      }
+      setSearchResults(tracks);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery]);
+
   const applyPaste = useCallback(() => {
     setLocalError('');
     const id = parseSpotifyTrackId(paste);
@@ -42,6 +92,25 @@ export default function SpotifyCollectionMusicField({
     setPaste('');
   }, [paste, onTrackIdChange]);
 
+  const pickSearchTrack = useCallback(
+    (id) => {
+      window.clearTimeout(searchDebounceRef.current);
+      onTrackIdChange(id);
+      setSearchInput('');
+      setDebouncedQuery('');
+      setSearchResults([]);
+      setSearchError('');
+      setSearchLoading(false);
+    },
+    [onTrackIdChange],
+  );
+
+  const showSearchEmpty =
+    !searchLoading &&
+    debouncedQuery.trim().length >= 2 &&
+    searchResults.length === 0 &&
+    !searchError;
+
   return (
     <div
       className={`spotify-field${theme === 'light' ? ' spotify-field--light' : ''} ${className}`.trim()}
@@ -50,8 +119,7 @@ export default function SpotifyCollectionMusicField({
         Collection music (optional)
       </span>
       <p className="spotify-field__hint" id={`${idPrefix}-hint`}>
-        Paste a Spotify track link from the app or web player. It will show as a player on the
-        collection page (no Spotify API keys needed).
+        Search Spotify to quickly find a track, or paste a Spotify URL manually.
       </p>
 
       {trackId && (
@@ -80,6 +148,60 @@ export default function SpotifyCollectionMusicField({
         </div>
       )}
 
+      <div className="spotify-field__search-block">
+        <span className="spotify-field__sub-label" id={`${idPrefix}-search-label`}>
+          Search tracks
+        </span>
+        <div className="spotify-field__row spotify-field__row--search">
+          <input
+            id={`${idPrefix}-search`}
+            className="spotify-field__input"
+            type="search"
+            value={searchInput}
+            onChange={(e) => onSearchInputChange(e.target.value)}
+            placeholder="Artist or song name…"
+            autoComplete="off"
+            aria-labelledby={`${idPrefix}-search-label`}
+          />
+          {searchLoading ? (
+            <span className="spotify-field__search-status" aria-live="polite">
+              Searching…
+            </span>
+          ) : null}
+        </div>
+        {searchError ? <p className="spotify-field__msg spotify-field__msg--search">{searchError}</p> : null}
+        {showSearchEmpty ? <p className="spotify-field__search-empty">No tracks found.</p> : null}
+        {searchResults.length > 0 ? (
+          <ul className="spotify-field__results" role="listbox" aria-label="Spotify search results">
+            {searchResults.map((t) => (
+              <li key={t.id} className="spotify-field__result">
+                <button
+                  type="button"
+                  className="spotify-field__result-btn"
+                  onClick={() => pickSearchTrack(t.id)}
+                >
+                  {t.imageUrl ? (
+                    <img className="spotify-field__result-thumb" src={t.imageUrl} alt="" />
+                  ) : (
+                    <span className="spotify-field__result-thumb spotify-field__result-thumb--empty" />
+                  )}
+                  <span className="spotify-field__result-text">
+                    <span className="spotify-field__result-title">{t.name}</span>
+                    <span className="spotify-field__result-meta">
+                      {(t.artists || []).join(', ')}
+                      {t.album ? ` · ${t.album}` : ''}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+
+      <span className="spotify-field__sub-label" id={`${idPrefix}-paste-label`}>
+        Or paste a link
+      </span>
       <div className="spotify-field__row">
         <input
           id={`${idPrefix}-paste`}
@@ -94,8 +216,7 @@ export default function SpotifyCollectionMusicField({
             }
           }}
           placeholder="Paste Spotify track URL…"
-          aria-labelledby={`${idPrefix}-label`}
-          aria-describedby={`${idPrefix}-hint`}
+          aria-labelledby={`${idPrefix}-paste-label`}
         />
         <button type="button" className="spotify-field__btn" onClick={() => void applyPaste()}>
           Use link
