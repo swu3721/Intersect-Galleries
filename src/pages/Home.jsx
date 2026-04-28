@@ -155,7 +155,7 @@ export default function Home() {
             style={{ x: heroX, opacity: heroOpacity }}
           >
             <img
-              src="/intersect-logo.png"
+              src="/intersect-logo.jpeg"
               alt=""
               className="demo-hero-logo"
             />
