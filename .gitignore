@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Supabase Edge Function secrets (local)
+supabase/functions/.env
+
 *.pdf
 
 # Editor directories and files
