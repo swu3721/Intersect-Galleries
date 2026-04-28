@@ -18,21 +18,21 @@ export function isAllowedPortfolioMedia(file) {
 }
 
 /**
- * Converts HEIC/HEIF to JPEG for storage and `<img>` compatibility. Videos and non-HEIC images pass through unchanged.
+ * Converts HEIC/HEIF to JPEG for storage and `<img>` compatibility. Uses `heic-to` (current libheif);
+ * `heic2any` often fails on newer iPhone photos with ERR_LIBHEIF format not supported.
+ * Videos and non-HEIC images pass through unchanged.
  */
 export async function ensureWebFriendlyImageOrPassThrough(file) {
   if ((file.type || '').startsWith('video/')) return file;
   if (!isHeicLikeFile(file)) return file;
   try {
-    const { default: heic2any } = await import('heic2any');
-    const result = await heic2any({
+    const { heicTo } = await import('heic-to');
+    const blob = await heicTo({
       blob: file,
-      toType: 'image/jpeg',
+      type: 'image/jpeg',
       quality: 0.92,
     });
-    const blobs = Array.isArray(result) ? result : [result];
-    const blob = blobs[0];
-    if (!blob) throw new Error('Empty conversion result');
+    if (!blob || !(blob instanceof Blob)) throw new Error('Empty conversion result');
     const stem = file.name.replace(/\.[^.]+$/i, '') || 'image';
     const safeStem = stem.replace(/[^\w.-]+/g, '_').slice(0, 120) || 'image';
     return new File([blob], `${safeStem}.jpg`, { type: 'image/jpeg' });
