@@ -151,6 +151,7 @@ export function mapProfileRowsToViewModel(profile, items, stats = {}, collection
       coverColor: stringToColor(c.id),
       pieceCount: pieces.length,
       pieces,
+      spotifyTrackId: c.spotify_track_id || null,
     };
   });
 

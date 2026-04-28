@@ -13,6 +13,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { normalizePortfolioTemplate } from '../lib/portfolioTemplate';
 import { PortfolioWorksSection } from '../components/portfolioTemplates/PortfolioLayouts';
+import SpotifyCollectionMusicField from '../components/SpotifyCollectionMusicField';
 import { effectiveCollections, splitPortfolioForRails } from '../lib/portfolioDisplay';
 import './Profile.css';
 
@@ -117,6 +118,7 @@ export default function Profile() {
   const [newCollectionPieceTitle, setNewCollectionPieceTitle] = useState('');
   const [newCollectionPieceCategory, setNewCollectionPieceCategory] = useState('Mixed Media');
   const [newCollectionPieceFile, setNewCollectionPieceFile] = useState(null);
+  const [newCollectionSpotifyTrackId, setNewCollectionSpotifyTrackId] = useState(null);
   const [newWorkTitle, setNewWorkTitle] = useState('');
   const [newWorkCategory, setNewWorkCategory] = useState('Mixed Media');
   const [newWorkFile, setNewWorkFile] = useState(null);
@@ -209,6 +211,7 @@ export default function Profile() {
     setNewCollectionPieceTitle('');
     setNewCollectionPieceCategory(categoryChoices[0] || 'Mixed Media');
     setNewCollectionPieceFile(null);
+    setNewCollectionSpotifyTrackId(null);
     setNewWorkTitle('');
     setNewWorkCategory(categoryChoices[0] || 'Mixed Media');
     setNewWorkFile(null);
@@ -421,11 +424,19 @@ export default function Profile() {
       }
 
       const collectionId = crypto.randomUUID();
+      const spotifyTrackId =
+        addType === 'collection' &&
+        typeof newCollectionSpotifyTrackId === 'string' &&
+        /^[a-zA-Z0-9]{22}$/.test(newCollectionSpotifyTrackId)
+          ? newCollectionSpotifyTrackId
+          : null;
+
       const { error: colErr } = await supabase.from('portfolio_collections').insert({
         id: collectionId,
         user_id: userId,
         title: collectionTitle,
         audio_storage_path: null,
+        spotify_track_id: spotifyTrackId,
         sort_order: nextSort,
       });
       if (colErr) throw colErr;
@@ -468,6 +479,7 @@ export default function Profile() {
     newCollectionTitle,
     newCollectionPieceTitle,
     newCollectionPieceCategory,
+    newCollectionSpotifyTrackId,
     newWorkTitle,
     newWorkCategory,
     reloadProfileFromDb,
@@ -876,6 +888,12 @@ export default function Profile() {
                   value={newCollectionTitle}
                   onChange={(e) => setNewCollectionTitle(e.target.value)}
                   placeholder="e.g. Spring 2026"
+                />
+                <SpotifyCollectionMusicField
+                  theme="light"
+                  trackId={newCollectionSpotifyTrackId}
+                  onTrackIdChange={setNewCollectionSpotifyTrackId}
+                  idPrefix="add-collection-spotify"
                 />
                 <label htmlFor="add-collection-piece-title">First piece title</label>
                 <input
