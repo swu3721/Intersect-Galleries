@@ -19,9 +19,18 @@
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
   text-decoration: none;
   color: #fff;
+  min-width: 0;
+}
+
+.navbar-brand-logo {
+  flex-shrink: 0;
+  height: clamp(1.4rem, 4.2vw, 1.85rem);
+  width: auto;
+  max-width: clamp(2.25rem, 10vw, 3.5rem);
+  object-fit: contain;
 }
 
 .brand-icon {

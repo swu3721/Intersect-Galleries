@@ -17,6 +17,11 @@ export default function Navbar({ onLogout }) {
     >
       <div className="navbar-inner">
         <Link to="/" className="navbar-brand">
+          <img
+            className="navbar-brand-logo"
+            src="/intersect-logo.jpeg"
+            alt=""
+          />
           <motion.span
             className="brand-text"
             initial={{ opacity: 0 }}
